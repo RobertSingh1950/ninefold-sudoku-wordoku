@@ -2,6 +2,8 @@
 
 A responsive, browser-based Sudoku and Wordoku game with four difficulty levels, a pauseable timer, notes, undo, hints, mistake checking, saved progress, and best times.
 
+**Play it live:** [robertsingh1950.github.io/ninefold-sudoku-wordoku](https://robertsingh1950.github.io/ninefold-sudoku-wordoku/)
+
 ## Local development
 
 ```bash
