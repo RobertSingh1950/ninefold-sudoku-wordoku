@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#167455" />
+    <meta
+      name="description"
+      content="Ninefold is a polished, playable Sudoku and Wordoku puzzle game."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <title>Ninefold | Sudoku & Wordoku</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <a class="brand" href="./" aria-label="Ninefold home">
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="grid-3x3"></i></span>
+          <span>
+            <strong>Ninefold</strong>
+            <small>Sudoku & Wordoku</small>
+          </span>
+        </a>
+
+        <div class="mode-switch" role="tablist" aria-label="Game mode">
+          <button class="mode-button" id="sudokuMode" type="button" role="tab" data-mode="sudoku">
+            Sudoku
+          </button>
+          <button class="mode-button" id="wordokuMode" type="button" role="tab" data-mode="wordoku">
+            Wordoku
+          </button>
+        </div>
+
+        <button class="primary-button new-game-button" id="newGameButton" type="button">
+          <i data-lucide="plus" aria-hidden="true"></i>
+          <span>New game</span>
+        </button>
+      </header>
+
+      <main class="game-layout">
+        <section class="play-area" aria-labelledby="gameHeading">
+          <div class="game-topbar">
+            <div>
+              <p class="eyebrow" id="modeEyebrow">Classic Sudoku</p>
+              <h1 id="gameHeading">Medium puzzle</h1>
+            </div>
+
+            <div class="timer-control" aria-label="Game timer">
+              <i data-lucide="timer" aria-hidden="true"></i>
+              <time id="timerDisplay" datetime="PT0M0S">00:00</time>
+              <button class="icon-button" id="pauseButton" type="button" title="Pause game" aria-label="Pause game">
+                <i data-lucide="pause" aria-hidden="true"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="board-frame">
+            <div class="sudoku-board" id="sudokuBoard" role="grid" aria-label="Sudoku board"></div>
+            <div class="pause-screen" id="pauseScreen" hidden>
+              <span class="pause-icon" aria-hidden="true"><i data-lucide="pause"></i></span>
+              <strong>Game paused</strong>
+              <button class="primary-button" id="resumeButton" type="button">
+                <i data-lucide="play" aria-hidden="true"></i>
+                Resume
+              </button>
+            </div>
+          </div>
+
+          <div class="number-pad" id="numberPad" aria-label="Entry pad"></div>
+
+          <div class="tool-row" aria-label="Game tools">
+            <button class="tool-button" id="undoButton" type="button">
+              <i data-lucide="undo-2" aria-hidden="true"></i>
+              <span>Undo</span>
+            </button>
+            <button class="tool-button" id="eraseButton" type="button">
+              <i data-lucide="eraser" aria-hidden="true"></i>
+              <span>Erase</span>
+            </button>
+            <button class="tool-button" id="notesButton" type="button" aria-pressed="false">
+              <i data-lucide="pencil" aria-hidden="true"></i>
+              <span>Notes</span>
+              <kbd>N</kbd>
+            </button>
+            <button class="tool-button hint-button" id="hintButton" type="button">
+              <i data-lucide="lightbulb" aria-hidden="true"></i>
+              <span>Hint</span>
+              <small id="hintBadge">3</small>
+            </button>
+          </div>
+        </section>
+
+        <aside class="control-panel" aria-label="Game controls and progress">
+          <section class="panel-section setup-section">
+            <div class="section-heading">
+              <span>Game setup</span>
+              <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+            </div>
+
+            <label class="field-label" for="difficultySelect">Difficulty</label>
+            <select id="difficultySelect">
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+              <option value="expert">Expert</option>
+            </select>
+
+            <div id="wordokuOptions" hidden>
+              <label class="field-label" for="letterSetSelect">Letter set</label>
+              <select id="letterSetSelect">
+                <option value="DISCOVERY">DISCOVERY</option>
+                <option value="ALGORITHM">ALGORITHM</option>
+                <option value="BLUEPRINT">BLUEPRINT</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="panel-section progress-section">
+            <div class="section-heading">
+              <span>Progress</span>
+              <i data-lucide="chart-no-axes-column-increasing" aria-hidden="true"></i>
+            </div>
+            <dl class="stats-list">
+              <div>
+                <dt>Mistakes</dt>
+                <dd id="mistakeCount">0</dd>
+              </div>
+              <div>
+                <dt>Hints left</dt>
+                <dd id="hintsLeft">3</dd>
+              </div>
+              <div>
+                <dt>Best time</dt>
+                <dd id="bestTime">--:--</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="panel-section preferences-section">
+            <div class="section-heading">
+              <span>Preferences</span>
+              <i data-lucide="settings-2" aria-hidden="true"></i>
+            </div>
+            <label class="toggle-row" for="autoCheckToggle">
+              <span>
+                <strong>Check mistakes</strong>
+                <small>Show incorrect entries as you play</small>
+              </span>
+              <input id="autoCheckToggle" type="checkbox" checked />
+              <span class="toggle-track" aria-hidden="true"></span>
+            </label>
+            <button class="secondary-button check-button" id="checkButton" type="button">
+              <i data-lucide="circle-check" aria-hidden="true"></i>
+              Check board
+            </button>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="app-footer">
+        <span>Ninefold</span>
+        <span>Every square has a place.</span>
+      </footer>
+    </div>
+
+    <dialog class="game-dialog" id="newGameDialog">
+      <form method="dialog">
+        <button class="dialog-close icon-button" value="cancel" title="Close" aria-label="Close dialog">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+        <span class="dialog-icon" aria-hidden="true"><i data-lucide="rotate-ccw"></i></span>
+        <p class="eyebrow">Start fresh</p>
+        <h2>Leave this puzzle?</h2>
+        <p>Your current game is saved, but starting a new puzzle will replace it.</p>
+        <div class="dialog-actions">
+          <button class="secondary-button" value="cancel">Keep playing</button>
+          <button class="primary-button" id="confirmNewGame" value="confirm">New puzzle</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog class="game-dialog success-dialog" id="successDialog">
+      <div class="celebration" id="celebration" aria-hidden="true"></div>
+      <span class="dialog-icon success-icon" aria-hidden="true"><i data-lucide="trophy"></i></span>
+      <p class="eyebrow">Puzzle complete</p>
+      <h2>Beautifully solved.</h2>
+      <div class="finish-stats">
+        <div><span>Time</span><strong id="finalTime">00:00</strong></div>
+        <div><span>Mistakes</span><strong id="finalMistakes">0</strong></div>
+        <div><span>Difficulty</span><strong id="finalDifficulty">Medium</strong></div>
+      </div>
+      <button class="primary-button" id="playAgainButton" type="button">
+        <i data-lucide="sparkles" aria-hidden="true"></i>
+        Play another
+      </button>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

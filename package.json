@@ -1,0 +1,21 @@
+{
+  "name": "ninefold-sudoku-wordoku",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node --test",
+    "test:browser": "node scripts/browser-check.mjs"
+  },
+  "dependencies": {
+    "lucide": "^1.24.0",
+    "sudoku-gen": "^1.0.2"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.61.1",
+    "vite": "^7.2.2"
+  }
+}
