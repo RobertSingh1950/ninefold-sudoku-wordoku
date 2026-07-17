@@ -2,12 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   WORD_SEARCH_CONFIG,
+  WORD_SEARCH_LANGUAGES,
   createWordSearch,
   findWordSearchMatch,
   getSelectedWord,
   getSnappedWordSearchSelection,
   getWordSearchSelection,
   isValidWordSearchSavedGame,
+  splitWordSearchGraphemes,
 } from '../src/word-search.js';
 
 test('generates complete Word Search puzzles at every difficulty', () => {
@@ -22,6 +24,27 @@ test('generates complete Word Search puzzles at every difficulty', () => {
     puzzle.placements.forEach(({ word, cells }) => {
       const selected = getSelectedWord(puzzle.grid, cells);
       assert.ok(selected === word || [...selected].reverse().join('') === word);
+    });
+  });
+});
+
+test('generates playable Hindi Word Search puzzles at every difficulty', () => {
+  assert.ok(WORD_SEARCH_LANGUAGES.includes('hindi'));
+  Object.entries(WORD_SEARCH_CONFIG).forEach(([difficulty, config]) => {
+    const puzzle = createWordSearch(difficulty, 'hindi');
+    assert.equal(puzzle.wordSearchLanguage, 'hindi');
+    assert.equal(puzzle.difficulty, difficulty);
+    assert.equal(puzzle.grid.length, config.size ** 2);
+    assert.equal(puzzle.words.length, config.wordCount);
+    assert.ok(puzzle.grid.every((grapheme) => (
+      /^[\u0900-\u097f]+$/u.test(grapheme)
+      && splitWordSearchGraphemes(grapheme).length === 1
+    )));
+    puzzle.placements.forEach(({ word, cells }) => {
+      assert.equal(cells.length, splitWordSearchGraphemes(word).length);
+      const selected = getSelectedWord(puzzle.grid, cells);
+      const reversed = getSelectedWord(puzzle.grid, [...cells].reverse());
+      assert.ok(selected === word || reversed === word);
     });
   });
 });
@@ -48,10 +71,25 @@ test('matches selected words in either direction and ignores found words', () =>
   assert.equal(findWordSearchMatch(grid, ['PUZZLE'], new Set(['PUZZLE']), cells), null);
 });
 
+test('matches Hindi words without splitting vowel marks or conjuncts', () => {
+  const grid = ['भा', 'र', 'त', 'प्र', 'कृ', 'ति'];
+  assert.deepEqual(splitWordSearchGraphemes('भारत'), ['भा', 'र', 'त']);
+  assert.deepEqual(splitWordSearchGraphemes('प्रकृति'), ['प्र', 'कृ', 'ति']);
+  assert.equal(findWordSearchMatch(grid, ['भारत'], new Set(), [0, 1, 2]), 'भारत');
+  assert.equal(findWordSearchMatch(grid, ['भारत'], new Set(), [2, 1, 0]), 'भारत');
+});
+
 test('validates persisted Word Search puzzles', () => {
   const puzzle = createWordSearch('easy');
   const saved = { mode: 'wordsearch', ...puzzle };
   assert.equal(isValidWordSearchSavedGame(saved), true);
+  const legacySaved = { ...saved };
+  delete legacySaved.wordSearchLanguage;
+  assert.equal(isValidWordSearchSavedGame(legacySaved), true);
+
+  const hindiSaved = { mode: 'wordsearch', ...createWordSearch('easy', 'hindi') };
+  assert.equal(isValidWordSearchSavedGame(hindiSaved), true);
+  assert.equal(isValidWordSearchSavedGame({ ...hindiSaved, grid: ['क'] }), false);
   assert.equal(isValidWordSearchSavedGame({ ...saved, grid: ['A'] }), false);
   assert.equal(isValidWordSearchSavedGame({ ...saved, mode: 'sudoku' }), false);
 });

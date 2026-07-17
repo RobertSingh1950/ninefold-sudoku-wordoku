@@ -489,6 +489,27 @@ h1 {
   font-size: 19px;
 }
 
+.word-search-board[data-language="hindi"] .word-search-cell,
+.word-search-panel[data-language="hindi"] {
+  font-family: "Nirmala UI", Mangal, "Kohinoor Devanagari", Aptos, "Segoe UI", sans-serif;
+}
+
+.word-search-board[data-size="9"][data-language="hindi"] .word-search-cell {
+  font-size: 25px;
+}
+
+.word-search-board[data-size="10"][data-language="hindi"] .word-search-cell {
+  font-size: 23px;
+}
+
+.word-search-board[data-size="12"][data-language="hindi"] .word-search-cell {
+  font-size: 20px;
+}
+
+.word-search-board[data-size="14"][data-language="hindi"] .word-search-cell {
+  font-size: 17px;
+}
+
 .word-search-cell:hover {
   background: var(--surface-hover);
 }
@@ -821,11 +842,13 @@ select {
   cursor: pointer;
 }
 
-#wordokuOptions {
+#wordokuOptions,
+#wordSearchOptions {
   margin-top: 16px;
 }
 
-#wordokuOptions[hidden] {
+#wordokuOptions[hidden],
+#wordSearchOptions[hidden] {
   display: none;
 }
 
@@ -1635,6 +1658,22 @@ select {
 
   .word-search-board[data-size="14"] .word-search-cell {
     font-size: 15px;
+  }
+
+  .word-search-board[data-size="9"][data-language="hindi"] .word-search-cell {
+    font-size: 20px;
+  }
+
+  .word-search-board[data-size="10"][data-language="hindi"] .word-search-cell {
+    font-size: 18px;
+  }
+
+  .word-search-board[data-size="12"][data-language="hindi"] .word-search-cell {
+    font-size: 15px;
+  }
+
+  .word-search-board[data-size="14"][data-language="hindi"] .word-search-cell {
+    font-size: 13px;
   }
 
   .word-search-panel {

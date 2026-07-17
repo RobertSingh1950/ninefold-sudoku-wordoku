@@ -1,8 +1,8 @@
 # Ninefold
 
-A responsive browser game with Sudoku, Wordoku, and themed Word Search modes. It includes four difficulty levels, a pauseable timer, mouse and touch selection, candidate notes, hints, mistake checking, puzzle restart, dark mode, saved progress, shareable results, and best times.
+A responsive browser game with Sudoku, Wordoku, and themed English or Hindi Word Search modes. It includes four difficulty levels, a pauseable timer, mouse and touch selection, candidate notes, hints, mistake checking, puzzle restart, dark mode, saved progress, shareable results, and best times.
 
-The layout and Word Search selection flow are tested at iPad Mini, iPad Air, 11-inch iPad Pro, and 13-inch iPad Pro viewport sizes in portrait and landscape using both Chromium and WebKit.
+The layout and Hindi Word Search selection flow are tested at iPad Mini, iPad Air, 11-inch iPad Pro, and 13-inch iPad Pro viewport sizes in portrait and landscape using both Chromium and WebKit.
 
 **Play it live:** [robertsingh1950.github.io/ninefold-sudoku-wordoku](https://robertsingh1950.github.io/ninefold-sudoku-wordoku/)
 

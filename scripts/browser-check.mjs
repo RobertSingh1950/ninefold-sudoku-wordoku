@@ -49,11 +49,15 @@ async function findWordSearchTarget(page, requestedWord = null) {
       .filter(([rowStep, columnStep]) => rowStep || columnStep);
 
     for (const word of words) {
+      const graphemes = typeof Intl.Segmenter === 'function'
+        ? [...new Intl.Segmenter('hi', { granularity: 'grapheme' }).segment(word)]
+          .map(({ segment }) => segment)
+        : [...word];
       for (let start = 0; start < cells.length; start += 1) {
         const startRow = Math.floor(start / size);
         const startColumn = start % size;
         for (const [rowStep, columnStep] of directions) {
-          const path = [...word].map((_, offset) => {
+          const path = graphemes.map((_, offset) => {
             const row = startRow + rowStep * offset;
             const column = startColumn + columnStep * offset;
             return row < 0 || column < 0 || row >= size || column >= size ? null : row * size + column;
@@ -163,13 +167,14 @@ try {
     'SEO title should name all three game modes',
   );
   assert.ok(seo.description.length >= 120 && seo.description.length <= 160, 'meta description should use a useful search-result length');
+  assert.ok(seo.description.includes('Hindi Word Search'), 'meta description should advertise Hindi Word Search');
   assert.ok(seo.robots.includes('index') && seo.robots.includes('max-image-preview:large'), 'robots metadata should permit rich indexing');
   assert.equal(seo.canonical, canonicalUrl, 'canonical URL should point to the live product page');
   assert.equal(seo.openGraphImage, `${canonicalUrl}ninefold-social-preview.png`, 'Open Graph image should use an absolute production URL');
   assert.equal(seo.twitterCard, 'summary_large_image', 'Twitter should use the large image card');
   assert.ok(seo.openGraphTitle && seo.openGraphDescription && seo.openGraphImageAlt, 'Open Graph metadata should be complete');
   assert.equal(seo.h1Count, 1, 'page should have one primary heading');
-  assert.equal(seo.faqCount, 6, 'visible FAQ should contain all structured questions');
+  assert.equal(seo.faqCount, 7, 'visible FAQ should contain all structured questions');
 
   const schemaGraph = seo.schemas.flatMap((schema) => schema['@graph'] ?? [schema]);
   const schemaHasType = (type) => schemaGraph.some((node) => {
@@ -285,6 +290,8 @@ try {
   assert.equal(wordSearchCellCount, 100, 'medium Word Search should render a 10x10 grid');
   assert.equal(await page.locator('.word-search-list li').count(), 8, 'medium Word Search should list eight words');
   assert.ok(await page.locator('#wordSearchPanel').isVisible(), 'Word Search list should be visible');
+  assert.ok(await page.locator('#wordSearchOptions').isVisible(), 'Word Search language options should be visible');
+  assert.equal(await page.locator('#wordSearchLanguageSelect').inputValue(), 'english', 'English should be the default Word Search language');
   assert.ok(await page.locator('#numberPad').isHidden(), 'Sudoku entry pad should be hidden in Word Search');
   assert.ok(await page.locator('#preferencesSection').isHidden(), 'Sudoku preferences should be hidden in Word Search');
 
@@ -333,6 +340,26 @@ try {
   await page.locator('#successDialog').waitFor({ state: 'hidden' });
   assert.equal(await page.locator('.word-search-list li.found').count(), 0, 'play again should create a fresh Word Search');
 
+  await page.locator('#wordSearchLanguageSelect').selectOption('hindi');
+  if (await page.locator('#newGameDialog').isVisible()) await page.locator('#confirmNewGame').click();
+  await page.locator('#sudokuBoard[data-language="hindi"]').waitFor();
+  assert.match(await page.locator('#gameHeading').innerText(), /Hindi Word Search/, 'Hindi Word Search should have a clear game heading');
+  assert.equal(await page.locator('#wordSearchListHeading').innerText(), 'छिपे हुए शब्द खोजें', 'Hindi mode should localize the word-list heading');
+  assert.equal(await page.locator('#sudokuBoard').getAttribute('lang'), 'hi', 'Hindi grid should declare its language');
+  const hindiGrid = await page.locator('.word-search-cell').allInnerTexts();
+  const hindiWords = await page.locator('.word-search-list li span:last-child').allInnerTexts();
+  assert.ok(hindiGrid.every((value) => /^[\u0900-\u097f]+$/u.test(value.trim())), 'Hindi grid should contain only Devanagari graphemes');
+  assert.ok(hindiWords.every((value) => /^[\u0900-\u097f]+$/u.test(value.trim())), 'Hindi word list should contain only Devanagari words');
+  const firstHindiWord = await findWordSearchTarget(page);
+  assert.ok(firstHindiWord, 'a listed Hindi word should exist in the grid');
+  await dragWordSearchPath(page, firstHindiWord);
+  assert.equal(await page.locator('.word-search-list li.found').count(), 1, 'dragging across a Hindi word should mark it found');
+  await page.screenshot({ path: artifactPath('ninefold-hindi-word-search.png'), fullPage: true });
+
+  await page.reload({ waitUntil: 'networkidle' });
+  assert.equal(await page.locator('#wordSearchLanguageSelect').inputValue(), 'hindi', 'Hindi language choice should persist');
+  assert.equal(await page.locator('.word-search-list li.found').count(), 1, 'found Hindi words should persist after reload');
+
   await page.locator('#pauseButton').click();
   assert.ok(await page.locator('#pauseScreen').isVisible(), 'pause overlay should be visible');
   await page.locator('#resumeButton').click();
@@ -362,6 +389,8 @@ try {
   await tabletPage.goto(appUrl, { waitUntil: 'networkidle' });
   await tabletPage.locator('#wordSearchMode').click();
   await tabletPage.locator('#wordSearchMode.active').waitFor();
+  await tabletPage.locator('#wordSearchLanguageSelect').selectOption('hindi');
+  await tabletPage.locator('#sudokuBoard[data-language="hindi"]').waitFor();
 
   for (const size of tabletSizes) {
     await tabletPage.setViewportSize({ width: size.width, height: size.height });

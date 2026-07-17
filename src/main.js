@@ -37,6 +37,7 @@ import {
   isValidSavedGame,
 } from './game.js';
 import {
+  WORD_SEARCH_LANGUAGES,
   createWordSearch,
   findWordSearchMatch,
   getSnappedWordSearchSelection,
@@ -92,9 +93,13 @@ const refs = {
   difficulty: document.querySelector('#difficultySelect'),
   letterSet: document.querySelector('#letterSetSelect'),
   wordokuOptions: document.querySelector('#wordokuOptions'),
+  wordSearchOptions: document.querySelector('#wordSearchOptions'),
+  wordSearchLanguage: document.querySelector('#wordSearchLanguageSelect'),
   wordSearchPanel: document.querySelector('#wordSearchPanel'),
   wordSearchWords: document.querySelector('#wordSearchWords'),
   wordSearchFoundCount: document.querySelector('#wordSearchFoundCount'),
+  wordSearchListEyebrow: document.querySelector('#wordSearchListEyebrow'),
+  wordSearchListHeading: document.querySelector('#wordSearchListHeading'),
   autoCheck: document.querySelector('#autoCheckToggle'),
   mistakeCount: document.querySelector('#mistakeCount'),
   hintsLeft: document.querySelector('#hintsLeft'),
@@ -157,6 +162,9 @@ function loadSettings() {
   return {
     autoCheck: settings.autoCheck !== false,
     letterSet: LETTER_SETS.includes(settings.letterSet) ? settings.letterSet : LETTER_SETS[0],
+    wordSearchLanguage: WORD_SEARCH_LANGUAGES.includes(settings.wordSearchLanguage)
+      ? settings.wordSearchLanguage
+      : 'english',
     theme: ['light', 'dark'].includes(settings.theme) ? settings.theme : systemTheme,
   };
 }
@@ -165,12 +173,16 @@ function newState(options = {}) {
   const settings = loadSettings();
   const difficulty = DIFFICULTIES.includes(options.difficulty) ? options.difficulty : 'medium';
   const mode = ['wordoku', 'wordsearch'].includes(options.mode) ? options.mode : 'sudoku';
+  const wordSearchLanguage = WORD_SEARCH_LANGUAGES.includes(options.wordSearchLanguage)
+    ? options.wordSearchLanguage
+    : settings.wordSearchLanguage;
 
   if (mode === 'wordsearch') {
-    const generated = createWordSearch(difficulty);
+    const generated = createWordSearch(difficulty, wordSearchLanguage);
     return {
       mode,
       difficulty: generated.difficulty,
+      wordSearchLanguage: generated.wordSearchLanguage,
       letterSet: LETTER_SETS.includes(options.letterSet) ? options.letterSet : settings.letterSet,
       autoCheck: settings.autoCheck,
       theme: settings.theme,
@@ -198,6 +210,7 @@ function newState(options = {}) {
   return {
     mode,
     difficulty: generated.difficulty,
+    wordSearchLanguage,
     letterSet: LETTER_SETS.includes(options.letterSet) ? options.letterSet : settings.letterSet,
     autoCheck: settings.autoCheck,
     theme: settings.theme,
@@ -229,6 +242,9 @@ function restoreState() {
       autoCheck: settings.autoCheck,
       theme: settings.theme,
       letterSet: LETTER_SETS.includes(saved.letterSet) ? saved.letterSet : settings.letterSet,
+      wordSearchLanguage: WORD_SEARCH_LANGUAGES.includes(saved.wordSearchLanguage)
+        ? saved.wordSearchLanguage
+        : 'english',
       foundWords,
       foundSelections: (saved.foundSelections ?? []).filter(({ word, cells }) => (
         foundWords.has(word)
@@ -254,6 +270,9 @@ function restoreState() {
     autoCheck: settings.autoCheck,
     theme: settings.theme,
     letterSet: LETTER_SETS.includes(saved.letterSet) ? saved.letterSet : settings.letterSet,
+    wordSearchLanguage: WORD_SEARCH_LANGUAGES.includes(saved.wordSearchLanguage)
+      ? saved.wordSearchLanguage
+      : settings.wordSearchLanguage,
     notes: Array.from({ length: 81 }, (_, index) => new Set(saved.notes?.[index] ?? [])),
     wrongIndices: new Set(saved.wrongIndices ?? []),
     hintedIndices: new Set(saved.hintedIndices ?? []),
@@ -297,12 +316,18 @@ function saveState() {
 function saveSettings() {
   localStorage.setItem(
     SETTINGS_KEY,
-    JSON.stringify({ autoCheck: state.autoCheck, letterSet: state.letterSet, theme: state.theme }),
+    JSON.stringify({
+      autoCheck: state.autoCheck,
+      letterSet: state.letterSet,
+      wordSearchLanguage: state.wordSearchLanguage,
+      theme: state.theme,
+    }),
   );
 }
 
 function bestTimeKey() {
-  return `${state.mode}-${state.difficulty}`;
+  const languageSuffix = state.mode === 'wordsearch' && state.wordSearchLanguage === 'hindi' ? '-hindi' : '';
+  return `${state.mode}${languageSuffix}-${state.difficulty}`;
 }
 
 function getBestTime() {
@@ -325,12 +350,20 @@ function buildBoard() {
   refs.board.className = state.mode === 'wordsearch' ? 'sudoku-board word-search-board' : 'sudoku-board';
   refs.board.style.removeProperty('--word-search-size');
   delete refs.board.dataset.size;
+  delete refs.board.dataset.language;
+  refs.board.removeAttribute('lang');
 
   const fragment = document.createDocumentFragment();
   if (state.mode === 'wordsearch') {
     refs.board.style.setProperty('--word-search-size', String(state.size));
     refs.board.dataset.size = String(state.size);
-    refs.board.setAttribute('aria-label', `${capitalize(state.difficulty)} ${state.themeName} word search`);
+    refs.board.dataset.language = state.wordSearchLanguage;
+    refs.board.lang = state.wordSearchLanguage === 'hindi' ? 'hi' : 'en';
+    const languageLabel = state.wordSearchLanguage === 'hindi' ? 'Hindi ' : '';
+    refs.board.setAttribute(
+      'aria-label',
+      `${capitalize(state.difficulty)} ${state.themeName} ${languageLabel}word search`,
+    );
     refs.board.setAttribute('aria-rowcount', String(state.size));
     refs.board.setAttribute('aria-colcount', String(state.size));
     for (let index = 0; index < state.grid.length; index += 1) {
@@ -454,6 +487,7 @@ function renderWordSearchBoard() {
 }
 
 function renderWordSearchList() {
+  const isHindi = state.wordSearchLanguage === 'hindi';
   refs.wordSearchWords.replaceChildren();
   const fragment = document.createDocumentFragment();
   state.words.forEach((word) => {
@@ -462,7 +496,10 @@ function renderWordSearchList() {
     const label = document.createElement('span');
     const found = state.foundWords.has(word);
     item.classList.toggle('found', found);
-    item.setAttribute('aria-label', `${word}, ${found ? 'found' : 'not found'}`);
+    item.setAttribute(
+      'aria-label',
+      isHindi ? `${word}, ${found ? 'मिल गया' : 'नहीं मिला'}` : `${word}, ${found ? 'found' : 'not found'}`,
+    );
     marker.className = 'word-search-marker';
     marker.setAttribute('aria-hidden', 'true');
     label.textContent = word;
@@ -505,6 +542,7 @@ function renderTimer() {
 
 function render() {
   const isWordSearch = state.mode === 'wordsearch';
+  const isHindiWordSearch = isWordSearch && state.wordSearchLanguage === 'hindi';
   document.documentElement.dataset.mode = state.mode;
   document.documentElement.dataset.theme = state.theme;
   refs.themeColorMeta.content = state.theme === 'dark' ? '#151c18' : '#167455';
@@ -522,7 +560,11 @@ function render() {
   refs.difficulty.value = state.difficulty;
   refs.letterSet.value = state.letterSet;
   refs.wordokuOptions.hidden = state.mode !== 'wordoku';
+  refs.wordSearchOptions.hidden = !isWordSearch;
+  refs.wordSearchLanguage.value = state.wordSearchLanguage;
   refs.wordSearchPanel.hidden = !isWordSearch;
+  refs.wordSearchPanel.lang = isHindiWordSearch ? 'hi' : 'en';
+  refs.wordSearchPanel.dataset.language = isHindiWordSearch ? 'hindi' : 'english';
   refs.numberPad.hidden = isWordSearch;
   refs.undoButton.hidden = isWordSearch;
   refs.eraseButton.hidden = isWordSearch;
@@ -532,8 +574,12 @@ function render() {
   refs.autoCheck.checked = state.autoCheck;
   refs.modeEyebrow.textContent = state.mode === 'wordoku'
     ? state.letterSet
-    : isWordSearch ? `${state.themeName} word search` : 'Classic Sudoku';
-  const gameLabel = state.mode === 'wordoku' ? 'Wordoku' : isWordSearch ? 'Word Search' : 'Sudoku';
+    : isHindiWordSearch
+      ? `${state.themeName} | हिंदी शब्द खोज`
+      : isWordSearch ? `${state.themeName} word search` : 'Classic Sudoku';
+  const gameLabel = state.mode === 'wordoku'
+    ? 'Wordoku'
+    : isHindiWordSearch ? 'Hindi Word Search' : isWordSearch ? 'Word Search' : 'Sudoku';
   refs.gameHeading.textContent = `${capitalize(state.difficulty)} ${gameLabel} puzzle`;
   refs.gameStatusText.textContent = state.completed ? 'Completed' : state.running ? 'In progress' : 'Paused';
   refs.mistakeCount.textContent = String(state.mistakes);
@@ -544,7 +590,9 @@ function render() {
 
   if (isWordSearch) {
     progress = Math.round((state.foundWords.size / state.words.length) * 100);
-    refs.progressLabel.textContent = 'Words found';
+    refs.wordSearchListEyebrow.textContent = isHindiWordSearch ? 'शब्द सूची' : 'Word list';
+    refs.wordSearchListHeading.textContent = isHindiWordSearch ? 'छिपे हुए शब्द खोजें' : 'Find the hidden words';
+    refs.progressLabel.textContent = isHindiWordSearch ? 'शब्द मिले' : 'Words found';
     refs.mistakeLabel.textContent = 'Attempts';
     refs.progressText.textContent = `${state.foundWords.size} of ${state.words.length}`;
     refs.progressTrack.setAttribute('aria-label', 'Words found');
@@ -693,12 +741,20 @@ function submitWordSearchSelection(selection) {
   if (match) {
     state.foundWords.add(match);
     state.foundSelections.push({ word: match, cells: [...selection] });
-    showToast(`Found ${match}.`);
+    showToast(state.wordSearchLanguage === 'hindi' ? `मिला: ${match}` : `Found ${match}.`);
   } else if (anyMatch) {
-    showToast(`${anyMatch} is already found.`);
+    showToast(
+      state.wordSearchLanguage === 'hindi'
+        ? `${anyMatch} पहले मिल चुका है।`
+        : `${anyMatch} is already found.`,
+    );
   } else if (selection.length > 1) {
     state.mistakes += 1;
-    showToast('That line is not in the word list.');
+    showToast(
+      state.wordSearchLanguage === 'hindi'
+        ? 'यह शब्द सूची में नहीं है।'
+        : 'That line is not in the word list.',
+    );
   }
 
   commitChange();
@@ -837,7 +893,11 @@ function useWordSearchHint() {
   state.wordSelection = [];
   state.selected = placement.cells[0];
   state.hints -= 1;
-  showToast(`${placement.word} is highlighted.`);
+  showToast(
+    state.wordSearchLanguage === 'hindi'
+      ? `${placement.word} हाइलाइट किया गया है।`
+      : `${placement.word} is highlighted.`,
+  );
   render();
   saveState();
 }
@@ -962,6 +1022,7 @@ function requestNewGame(options = {}, skipConfirmation = false) {
     mode: options.mode ?? state.mode,
     difficulty: options.difficulty ?? state.difficulty,
     letterSet: options.letterSet ?? state.letterSet,
+    wordSearchLanguage: options.wordSearchLanguage ?? state.wordSearchLanguage,
   };
 
   if (!skipConfirmation && hasProgress() && !state.completed) {
@@ -982,6 +1043,7 @@ function startNewGame(options) {
   buildBoard();
   buildNumberPad();
   render();
+  saveSettings();
   saveState();
 }
 
@@ -1022,7 +1084,11 @@ function toggleTheme() {
 }
 
 async function shareResult() {
-  const label = state.mode === 'wordoku' ? 'Wordoku' : state.mode === 'wordsearch' ? 'Word Search' : 'Sudoku';
+  const label = state.mode === 'wordoku'
+    ? 'Wordoku'
+    : state.mode === 'wordsearch' && state.wordSearchLanguage === 'hindi'
+      ? 'Hindi Word Search'
+      : state.mode === 'wordsearch' ? 'Word Search' : 'Sudoku';
   const resultLabel = state.mode === 'wordsearch'
     ? `${state.mistakes} ${state.mistakes === 1 ? 'missed attempt' : 'missed attempts'}`
     : `${state.mistakes} ${state.mistakes === 1 ? 'mistake' : 'mistakes'}`;
@@ -1145,6 +1211,9 @@ function bindEvents() {
     saveSettings();
     render();
     saveState();
+  });
+  refs.wordSearchLanguage.addEventListener('change', (event) => {
+    requestNewGame({ wordSearchLanguage: event.target.value });
   });
   refs.autoCheck.addEventListener('change', (event) => {
     if (state.mode === 'wordsearch') return;

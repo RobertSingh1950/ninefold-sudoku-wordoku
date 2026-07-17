@@ -6,7 +6,7 @@
     <title>Play Sudoku, Wordoku &amp; Word Search | Ninefold</title>
     <meta
       name="description"
-      content="Play free Sudoku, Wordoku and Word Search puzzles online with four difficulty levels, smart hints, saved progress and a timer. No sign-up required."
+      content="Play free Sudoku, Wordoku, English and Hindi Word Search puzzles online with four difficulty levels, smart hints, a timer and saved progress. No sign-up."
     />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -34,7 +34,7 @@
     <meta property="og:title" content="Play Sudoku, Wordoku &amp; Word Search | Ninefold" />
     <meta
       property="og:description"
-      content="Solve free Sudoku, Wordoku and Word Search puzzles online with four difficulty levels, hints and saved progress."
+      content="Solve free Sudoku, Wordoku, English and Hindi Word Search puzzles with four difficulty levels, hints and saved progress."
     />
     <meta property="og:url" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/" />
     <meta property="og:image" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png" />
@@ -48,7 +48,7 @@
     <meta name="twitter:title" content="Play Sudoku, Wordoku &amp; Word Search | Ninefold" />
     <meta
       name="twitter:description"
-      content="Solve free Sudoku, Wordoku and Word Search puzzles online with four difficulty levels, hints and saved progress."
+      content="Solve free Sudoku, Wordoku, English and Hindi Word Search puzzles with four difficulty levels, hints and saved progress."
     />
     <meta name="twitter:image" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png" />
     <meta name="twitter:image:alt" content="Ninefold online puzzle game with a playable board and progress controls" />
@@ -63,28 +63,28 @@
             "url": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/",
             "name": "Ninefold",
             "alternateName": "Ninefold Sudoku, Wordoku & Word Search",
-            "description": "Free online Sudoku, Wordoku and Word Search puzzle games with four difficulty levels.",
-            "inLanguage": "en"
+            "description": "Free online Sudoku, Wordoku, English and Hindi Word Search puzzle games with four difficulty levels.",
+            "inLanguage": ["en", "hi"]
           },
           {
             "@type": ["WebApplication", "VideoGame"],
             "@id": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/#game",
             "url": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/",
             "name": "Ninefold Sudoku, Wordoku & Word Search",
-            "description": "Play free Sudoku, Wordoku and Word Search puzzles online with easy, medium, hard and expert difficulty levels.",
+            "description": "Play free Sudoku, Wordoku, English and Hindi Word Search puzzles online with easy, medium, hard and expert difficulty levels.",
             "applicationCategory": "GameApplication",
             "applicationSubCategory": "Puzzle Game",
             "operatingSystem": "Any",
             "browserRequirements": "Requires JavaScript and a modern web browser.",
             "isAccessibleForFree": true,
-            "inLanguage": "en",
+            "inLanguage": ["en", "hi"],
             "genre": ["Puzzle", "Sudoku", "Word game", "Word search"],
             "playMode": "SinglePlayer",
             "gamePlatform": ["Web browser", "Desktop", "Mobile", "Tablet"],
             "image": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png",
             "screenshot": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png",
             "featureList": [
-              "Sudoku, Wordoku and Word Search game modes",
+              "Sudoku, Wordoku and English or Hindi Word Search game modes",
               "Easy, medium, hard and expert puzzles",
               "Hints, candidate notes and mistake checking",
               "Timer, progress tracking and local game saving",
@@ -128,6 +128,14 @@
                 "acceptedAnswer": {
                   "@type": "Answer",
                   "text": "Find each listed word hidden horizontally, vertically or diagonally in the letter grid. Words may also appear backwards on higher difficulty levels."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I play Word Search in Hindi?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Open Word Search and choose Hindi from the language menu to play themed Devanagari puzzles at any difficulty level."
                 }
               },
               {
@@ -230,7 +238,7 @@
           <section class="word-search-panel" id="wordSearchPanel" aria-labelledby="wordSearchListHeading" hidden>
             <div class="word-search-panel-heading">
               <div>
-                <p class="eyebrow">Word list</p>
+                <p class="eyebrow" id="wordSearchListEyebrow">Word list</p>
                 <h2 id="wordSearchListHeading">Find the hidden words</h2>
               </div>
               <strong id="wordSearchFoundCount">0 of 8</strong>
@@ -283,6 +291,14 @@
                 <option value="DISCOVERY">DISCOVERY</option>
                 <option value="ALGORITHM">ALGORITHM</option>
                 <option value="BLUEPRINT">BLUEPRINT</option>
+              </select>
+            </div>
+
+            <div id="wordSearchOptions" hidden>
+              <label class="field-label" for="wordSearchLanguageSelect">Language</label>
+              <select id="wordSearchLanguageSelect">
+                <option value="english">English</option>
+                <option value="hindi" lang="hi">हिंदी</option>
               </select>
             </div>
           </section>
@@ -357,11 +373,11 @@
           <header class="seo-intro">
             <div>
               <p class="eyebrow">Three ways to solve</p>
-              <h2 id="aboutHeading">Play free Sudoku, Wordoku and Word Search online</h2>
+              <h2 id="aboutHeading">Play free Sudoku, Wordoku and Hindi Word Search online</h2>
             </div>
             <p>
-              Ninefold brings classic number puzzles, letter-based Wordoku and hidden-word searches together in
-              one focused game. Choose a challenge and return to your saved puzzle whenever you are ready.
+              Ninefold brings classic number puzzles, letter-based Wordoku and English or Hindi hidden-word
+              searches together in one focused game. Choose a challenge and return to your saved puzzle anytime.
             </p>
           </header>
 
@@ -386,8 +402,8 @@
               <span class="guide-number" aria-hidden="true">03</span>
               <h3>Word Search</h3>
               <p>
-                Find themed words hidden across the grid horizontally, vertically or diagonally. Higher levels
-                use larger boards and can place words in any direction.
+                Choose English or Hindi, then find themed words hidden horizontally, vertically or diagonally.
+                Higher levels use larger boards and can place words in any direction.
               </p>
             </article>
             <article>
@@ -425,6 +441,13 @@
                 <p>
                   Find each listed word hidden horizontally, vertically or diagonally in the letter grid. Words
                   may also appear backwards on higher difficulty levels.
+                </p>
+              </details>
+              <details>
+                <summary>Can I play Word Search in Hindi?</summary>
+                <p>
+                  Yes. Open Word Search and choose Hindi from the language menu to play themed Devanagari
+                  puzzles at any difficulty level.
                 </p>
               </details>
               <details>
