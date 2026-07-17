@@ -353,7 +353,8 @@ function render() {
   refs.wordokuOptions.hidden = state.mode !== 'wordoku';
   refs.autoCheck.checked = state.autoCheck;
   refs.modeEyebrow.textContent = state.mode === 'wordoku' ? state.letterSet : 'Classic Sudoku';
-  refs.gameHeading.textContent = `${capitalize(state.difficulty)} puzzle`;
+  const gameLabel = state.mode === 'wordoku' ? 'Wordoku' : 'Sudoku';
+  refs.gameHeading.textContent = `${capitalize(state.difficulty)} ${gameLabel} puzzle`;
   refs.gameStatusText.textContent = state.completed ? 'Completed' : state.running ? 'In progress' : 'Paused';
   refs.mistakeCount.textContent = String(state.mistakes);
   refs.hintsLeft.textContent = String(state.hints);

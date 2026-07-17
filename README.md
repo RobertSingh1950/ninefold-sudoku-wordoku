@@ -23,6 +23,12 @@ npm run test:browser
 
 For the WebKit/Safari compatibility pass, install Playwright's WebKit browser once with `npx playwright-core install webkit`, then run `npm run test:webkit`.
 
+The browser checks also validate the canonical URL, search metadata, Open Graph image, JSON-LD schemas, sitemap, robots file, web app manifest, and visible FAQ content. With the local server running on port `4173`, regenerate the committed social preview and Apple icons with:
+
+```bash
+npm run generate:seo-assets
+```
+
 The included GitHub Actions workflow builds and publishes the site to GitHub Pages whenever `main` is pushed.
 
 Puzzle generation is powered by [`sudoku-gen`](https://www.npmjs.com/package/sudoku-gen), licensed under MIT. Interface icons are provided by [Lucide](https://lucide.dev/).

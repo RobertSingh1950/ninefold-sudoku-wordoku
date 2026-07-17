@@ -8,6 +8,7 @@ const executablePath = process.env.CHROME_PATH ?? 'C:\\Program Files\\Google\\Ch
 const artifactsPath = new URL('../artifacts/', import.meta.url);
 const browserErrors = [];
 const engine = process.argv.includes('--webkit') ? 'webkit' : 'chromium';
+const canonicalUrl = 'https://robertsingh1950.github.io/ninefold-sudoku-wordoku/';
 
 const tabletSizes = [
   { name: 'ipad-mini-portrait', width: 768, height: 1024 },
@@ -55,7 +56,7 @@ async function layoutMetrics(page) {
       || controlPanel.bottom <= playArea.top
     );
     const controls = [...document.querySelectorAll(
-      '.app-header button, .mode-button, .number-pad button, .tool-button, .panel-action, select, .check-button',
+      '.app-header button, .mode-button, .number-pad button, .tool-button, .panel-action, select, .check-button, .faq-list summary, .app-footer a',
     )].filter(visible);
 
     return {
@@ -91,6 +92,76 @@ try {
   watchBrowser(page);
 
   await page.goto(appUrl, { waitUntil: 'networkidle' });
+
+  const seo = await page.evaluate(() => {
+    const content = (selector) => document.querySelector(selector)?.getAttribute('content') ?? '';
+    const schemas = [...document.querySelectorAll('script[type="application/ld+json"]')]
+      .map((script) => JSON.parse(script.textContent));
+    return {
+      title: document.title,
+      description: content('meta[name="description"]'),
+      robots: content('meta[name="robots"]'),
+      canonical: document.querySelector('link[rel="canonical"]')?.href ?? '',
+      manifest: document.querySelector('link[rel="manifest"]')?.href ?? '',
+      openGraphTitle: content('meta[property="og:title"]'),
+      openGraphDescription: content('meta[property="og:description"]'),
+      openGraphImage: content('meta[property="og:image"]'),
+      openGraphImageAlt: content('meta[property="og:image:alt"]'),
+      twitterCard: content('meta[name="twitter:card"]'),
+      h1Count: document.querySelectorAll('h1').length,
+      faqCount: document.querySelectorAll('.faq-list details').length,
+      schemas,
+    };
+  });
+
+  assert.ok(seo.title.length >= 30 && seo.title.length <= 60, 'SEO title should use a useful search-result length');
+  assert.ok(seo.title.includes('Sudoku') && seo.title.includes('Wordoku'), 'SEO title should name both game modes');
+  assert.ok(seo.description.length >= 120 && seo.description.length <= 160, 'meta description should use a useful search-result length');
+  assert.ok(seo.robots.includes('index') && seo.robots.includes('max-image-preview:large'), 'robots metadata should permit rich indexing');
+  assert.equal(seo.canonical, canonicalUrl, 'canonical URL should point to the live product page');
+  assert.equal(seo.openGraphImage, `${canonicalUrl}ninefold-social-preview.png`, 'Open Graph image should use an absolute production URL');
+  assert.equal(seo.twitterCard, 'summary_large_image', 'Twitter should use the large image card');
+  assert.ok(seo.openGraphTitle && seo.openGraphDescription && seo.openGraphImageAlt, 'Open Graph metadata should be complete');
+  assert.equal(seo.h1Count, 1, 'page should have one primary heading');
+  assert.equal(seo.faqCount, 5, 'visible FAQ should contain all structured questions');
+
+  const schemaGraph = seo.schemas.flatMap((schema) => schema['@graph'] ?? [schema]);
+  const schemaHasType = (type) => schemaGraph.some((node) => {
+    const types = Array.isArray(node['@type']) ? node['@type'] : [node['@type']];
+    return types.includes(type);
+  });
+  assert.ok(schemaHasType('WebSite'), 'structured data should describe the website');
+  assert.ok(schemaHasType('WebApplication'), 'structured data should describe the playable web app');
+  assert.ok(schemaHasType('VideoGame'), 'structured data should describe the puzzle game');
+  assert.ok(schemaHasType('FAQPage'), 'structured data should match the visible FAQ');
+
+  const siteRoot = appUrl.endsWith('/') ? appUrl : `${appUrl}/`;
+  const isLocalApp = ['127.0.0.1', 'localhost'].includes(new URL(siteRoot).hostname);
+  const socialImageUrl = isLocalApp
+    ? new URL('ninefold-social-preview.png', siteRoot).href
+    : seo.openGraphImage;
+  const robotsResponse = await context.request.get(new URL('robots.txt', siteRoot).href);
+  const sitemapResponse = await context.request.get(new URL('sitemap.xml', siteRoot).href);
+  const manifestResponse = await context.request.get(seo.manifest);
+  const socialImageResponse = await context.request.get(socialImageUrl);
+  assert.ok(robotsResponse.ok(), 'robots.txt should be available');
+  assert.ok((await robotsResponse.text()).includes(`${canonicalUrl}sitemap.xml`), 'robots.txt should advertise the sitemap');
+  assert.ok(sitemapResponse.ok(), 'sitemap.xml should be available');
+  assert.ok((await sitemapResponse.text()).includes(`<loc>${canonicalUrl}</loc>`), 'sitemap should include the canonical page');
+  assert.ok(manifestResponse.ok(), 'web app manifest should be available');
+  const manifest = await manifestResponse.json();
+  assert.equal(manifest.name, 'Ninefold Sudoku & Wordoku', 'manifest should use the complete product name');
+  assert.equal(manifest.icons.length, 2, 'manifest should include both required icon sizes');
+  assert.ok(socialImageResponse.ok(), 'social preview image should be available');
+  assert.match(socialImageResponse.headers()['content-type'] ?? '', /^image\/png/, 'social preview should be a PNG');
+  const socialImageSize = await page.evaluate((imageUrl) => new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
+    image.onerror = reject;
+    image.src = imageUrl;
+  }), socialImageUrl);
+  assert.deepEqual(socialImageSize, { width: 1200, height: 630 }, 'social preview should use the recommended 1200x630 dimensions');
+
   assert.equal(await page.locator('.cell').count(), 81, 'board should contain 81 cells');
   assert.equal(await page.locator('#numberPad button').count(), 9, 'entry pad should contain 9 buttons');
 
