@@ -4,6 +4,7 @@ import {
   createPuzzle,
   displayValue,
   formatTime,
+  getCandidates,
   getDuplicateConflicts,
   getPeers,
   isSolved,
@@ -33,6 +34,16 @@ test('finds all twenty peers for a center cell', () => {
   assert.ok(peers.has(36));
   assert.ok(peers.has(30));
   assert.ok(!peers.has(40));
+});
+
+test('calculates candidate notes from row, column, and block peers', () => {
+  const values = Array(81).fill(0);
+  values[0] = 1;
+  values[10] = 2;
+  values[22] = 3;
+  values[76] = 4;
+  assert.deepEqual(getCandidates(values, 4), [2, 5, 6, 7, 8, 9]);
+  assert.deepEqual(getCandidates(values, 0), []);
 });
 
 test('detects duplicate entries in a row, column, or block', () => {

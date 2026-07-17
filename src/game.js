@@ -46,6 +46,12 @@ export function getPeers(index) {
   return peers;
 }
 
+export function getCandidates(values, index) {
+  if (values[index]) return [];
+  const usedValues = new Set([...getPeers(index)].map((peer) => values[peer]).filter(Boolean));
+  return Array.from({ length: 9 }, (_, value) => value + 1).filter((value) => !usedValues.has(value));
+}
+
 export function getDuplicateConflicts(values) {
   const conflicts = new Set();
   const units = [];

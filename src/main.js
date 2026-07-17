@@ -4,17 +4,22 @@ import {
   Eraser,
   Grid3X3,
   Lightbulb,
+  Moon,
   Pause,
   Pencil,
   Play,
   Plus,
+  RefreshCw,
   RotateCcw,
   Settings2,
+  Share2,
   SlidersHorizontal,
   Sparkles,
+  Sun,
   Timer,
   Trophy,
   Undo2,
+  WandSparkles,
   X,
   createIcons,
 } from 'lucide';
@@ -25,6 +30,7 @@ import {
   createPuzzle,
   displayValue,
   formatTime,
+  getCandidates,
   getDuplicateConflicts,
   getPeers,
   isSolved,
@@ -37,17 +43,22 @@ const ICONS = {
   Eraser,
   Grid3X3,
   Lightbulb,
+  Moon,
   Pause,
   Pencil,
   Play,
   Plus,
+  RefreshCw,
   RotateCcw,
   Settings2,
+  Share2,
   SlidersHorizontal,
   Sparkles,
+  Sun,
   Timer,
   Trophy,
   Undo2,
+  WandSparkles,
   X,
   Grid3x3: Grid3X3,
 };
@@ -67,6 +78,9 @@ const refs = {
   wordokuMode: document.querySelector('#wordokuMode'),
   modeEyebrow: document.querySelector('#modeEyebrow'),
   gameHeading: document.querySelector('#gameHeading'),
+  gameStatusText: document.querySelector('#gameStatusText'),
+  themeColorMeta: document.querySelector('#themeColorMeta'),
+  themeToggle: document.querySelector('#themeToggle'),
   difficulty: document.querySelector('#difficultySelect'),
   letterSet: document.querySelector('#letterSetSelect'),
   wordokuOptions: document.querySelector('#wordokuOptions'),
@@ -74,17 +88,25 @@ const refs = {
   mistakeCount: document.querySelector('#mistakeCount'),
   hintsLeft: document.querySelector('#hintsLeft'),
   bestTime: document.querySelector('#bestTime'),
+  progressText: document.querySelector('#progressText'),
+  progressTrack: document.querySelector('.progress-track'),
+  progressFill: document.querySelector('#progressFill'),
   undoButton: document.querySelector('#undoButton'),
   eraseButton: document.querySelector('#eraseButton'),
   notesButton: document.querySelector('#notesButton'),
   hintButton: document.querySelector('#hintButton'),
   hintBadge: document.querySelector('#hintBadge'),
   checkButton: document.querySelector('#checkButton'),
+  autoNotesButton: document.querySelector('#autoNotesButton'),
+  restartButton: document.querySelector('#restartButton'),
   newGameButton: document.querySelector('#newGameButton'),
   newGameDialog: document.querySelector('#newGameDialog'),
   confirmNewGame: document.querySelector('#confirmNewGame'),
+  restartDialog: document.querySelector('#restartDialog'),
+  confirmRestart: document.querySelector('#confirmRestart'),
   successDialog: document.querySelector('#successDialog'),
   playAgainButton: document.querySelector('#playAgainButton'),
+  shareResultButton: document.querySelector('#shareResultButton'),
   finalTime: document.querySelector('#finalTime'),
   finalMistakes: document.querySelector('#finalMistakes'),
   finalDifficulty: document.querySelector('#finalDifficulty'),
@@ -111,9 +133,11 @@ function loadJson(key, fallback) {
 
 function loadSettings() {
   const settings = loadJson(SETTINGS_KEY, {});
+  const systemTheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   return {
     autoCheck: settings.autoCheck !== false,
     letterSet: LETTER_SETS.includes(settings.letterSet) ? settings.letterSet : LETTER_SETS[0],
+    theme: ['light', 'dark'].includes(settings.theme) ? settings.theme : systemTheme,
   };
 }
 
@@ -127,6 +151,7 @@ function newState(options = {}) {
     difficulty: generated.difficulty,
     letterSet: LETTER_SETS.includes(options.letterSet) ? options.letterSet : settings.letterSet,
     autoCheck: settings.autoCheck,
+    theme: settings.theme,
     puzzle: generated.puzzle,
     solution: generated.solution,
     values: [...generated.puzzle],
@@ -152,6 +177,7 @@ function restoreState() {
   return {
     ...saved,
     autoCheck: settings.autoCheck,
+    theme: settings.theme,
     letterSet: LETTER_SETS.includes(saved.letterSet) ? saved.letterSet : settings.letterSet,
     notes: Array.from({ length: 81 }, (_, index) => new Set(saved.notes?.[index] ?? [])),
     wrongIndices: new Set(saved.wrongIndices ?? []),
@@ -185,7 +211,7 @@ function saveState() {
 function saveSettings() {
   localStorage.setItem(
     SETTINGS_KEY,
-    JSON.stringify({ autoCheck: state.autoCheck, letterSet: state.letterSet }),
+    JSON.stringify({ autoCheck: state.autoCheck, letterSet: state.letterSet, theme: state.theme }),
   );
 }
 
@@ -224,8 +250,12 @@ function buildNumberPad() {
   const fragment = document.createDocumentFragment();
   for (let value = 1; value <= 9; value += 1) {
     const button = document.createElement('button');
+    const valueLabel = document.createElement('strong');
+    const remainingLabel = document.createElement('small');
     button.type = 'button';
     button.dataset.value = String(value);
+    remainingLabel.className = 'remaining-count';
+    button.append(valueLabel, remainingLabel);
     button.addEventListener('click', () => enterValue(value));
     fragment.append(button);
   }
@@ -291,9 +321,12 @@ function renderNumberPad() {
       (count, entry, position) => count + Number(entry === value && entry === state.solution[position]),
       0,
     );
-    button.textContent = displayValue(value, state.mode, state.letterSet);
+    const display = displayValue(value, state.mode, state.letterSet);
+    button.querySelector('strong').textContent = display;
+    button.querySelector('small').textContent = solvedCount === 9 ? 'Done' : `${9 - solvedCount} left`;
     button.disabled = solvedCount === 9 || state.completed || !state.running;
-    button.setAttribute('aria-label', `Enter ${button.textContent}`);
+    button.classList.toggle('complete', solvedCount === 9);
+    button.setAttribute('aria-label', `Enter ${display}, ${9 - solvedCount} remaining`);
   });
 }
 
@@ -304,6 +337,13 @@ function renderTimer() {
 
 function render() {
   document.documentElement.dataset.mode = state.mode;
+  document.documentElement.dataset.theme = state.theme;
+  refs.themeColorMeta.content = state.theme === 'dark' ? '#151c18' : '#167455';
+  refs.themeToggle.innerHTML = state.theme === 'dark'
+    ? '<i data-lucide="sun" aria-hidden="true"></i>'
+    : '<i data-lucide="moon" aria-hidden="true"></i>';
+  refs.themeToggle.title = state.theme === 'dark' ? 'Use light theme' : 'Use dark theme';
+  refs.themeToggle.setAttribute('aria-label', refs.themeToggle.title);
   refs.sudokuMode.setAttribute('aria-selected', String(state.mode === 'sudoku'));
   refs.wordokuMode.setAttribute('aria-selected', String(state.mode === 'wordoku'));
   refs.sudokuMode.classList.toggle('active', state.mode === 'sudoku');
@@ -314,10 +354,20 @@ function render() {
   refs.autoCheck.checked = state.autoCheck;
   refs.modeEyebrow.textContent = state.mode === 'wordoku' ? state.letterSet : 'Classic Sudoku';
   refs.gameHeading.textContent = `${capitalize(state.difficulty)} puzzle`;
+  refs.gameStatusText.textContent = state.completed ? 'Completed' : state.running ? 'In progress' : 'Paused';
   refs.mistakeCount.textContent = String(state.mistakes);
   refs.hintsLeft.textContent = String(state.hints);
   refs.hintBadge.textContent = String(state.hints);
   refs.bestTime.textContent = getBestTime() === null ? '--:--' : formatTime(getBestTime());
+  const totalSquares = state.puzzle.filter((value) => value === 0).length;
+  const solvedSquares = state.values.reduce(
+    (count, value, index) => count + Number(!state.puzzle[index] && value === state.solution[index]),
+    0,
+  );
+  const progress = totalSquares ? Math.round((solvedSquares / totalSquares) * 100) : 100;
+  refs.progressText.textContent = `${solvedSquares} of ${totalSquares}`;
+  refs.progressFill.style.width = `${progress}%`;
+  refs.progressTrack.setAttribute('aria-valuenow', String(progress));
   refs.notesButton.classList.toggle('active', state.notesMode);
   refs.notesButton.setAttribute('aria-pressed', String(state.notesMode));
   refs.undoButton.disabled = state.history.length === 0 || state.completed || !state.running;
@@ -325,6 +375,8 @@ function render() {
   refs.notesButton.disabled = state.completed || !state.running;
   refs.hintButton.disabled = state.hints === 0 || state.completed || !state.running;
   refs.checkButton.disabled = state.completed || !state.running;
+  refs.autoNotesButton.disabled = state.completed || !state.running || solvedSquares === totalSquares;
+  refs.restartButton.disabled = state.completed;
   refs.pauseButton.disabled = state.completed;
   refs.pauseScreen.hidden = state.running || state.completed;
   refs.pauseButton.innerHTML = state.running
@@ -356,11 +408,26 @@ function canEditSelectedCell() {
 
 function rememberCell(index) {
   state.history.push({
+    kind: 'cell',
     index,
     value: state.values[index],
     notes: [...state.notes[index]],
     wasWrong: state.wrongIndices.has(index),
     wasHinted: state.hintedIndices.has(index),
+  });
+  if (state.history.length > 100) state.history.shift();
+}
+
+function rememberBoard() {
+  state.history.push({
+    kind: 'board',
+    values: [...state.values],
+    notes: state.notes.map((notes) => [...notes]),
+    wrongIndices: [...state.wrongIndices],
+    hintedIndices: [...state.hintedIndices],
+    selected: state.selected,
+    mistakes: state.mistakes,
+    hints: state.hints,
   });
   if (state.history.length > 100) state.history.shift();
 }
@@ -413,6 +480,19 @@ function eraseSelected() {
 function undo() {
   const previous = state.history.pop();
   if (!previous || !state.running || state.completed) return;
+
+  if (previous.kind === 'board') {
+    state.values = [...previous.values];
+    state.notes = previous.notes.map((notes) => new Set(notes));
+    state.wrongIndices = new Set(previous.wrongIndices);
+    state.hintedIndices = new Set(previous.hintedIndices);
+    state.selected = previous.selected;
+    state.mistakes = previous.mistakes;
+    state.hints = previous.hints;
+    commitChange(false);
+    return;
+  }
+
   state.values[previous.index] = previous.value;
   state.notes[previous.index] = new Set(previous.notes);
   if (previous.wasWrong) state.wrongIndices.add(previous.index);
@@ -420,6 +500,28 @@ function undo() {
   if (previous.wasHinted) state.hintedIndices.add(previous.index);
   else state.hintedIndices.delete(previous.index);
   state.selected = previous.index;
+  commitChange(false);
+}
+
+function fillCandidates() {
+  if (!state.running || state.completed) return;
+  const candidateNotes = state.values.map((value, index) => (
+    value || state.puzzle[index] ? new Set() : new Set(getCandidates(state.values, index))
+  ));
+  const changed = candidateNotes.some((notes, index) => (
+    notes.size !== state.notes[index].size || [...notes].some((value) => !state.notes[index].has(value))
+  ));
+
+  if (!changed) {
+    showToast('Candidate notes are already up to date.');
+    return;
+  }
+
+  rememberBoard();
+  state.notes = candidateNotes;
+  state.notesMode = true;
+  const notedSquares = candidateNotes.filter((notes) => notes.size > 0).length;
+  showToast(`Candidates added to ${notedSquares} squares.`);
   commitChange(false);
 }
 
@@ -551,6 +653,49 @@ function startNewGame(options) {
   saveState();
 }
 
+function restartCurrentGame() {
+  state.values = [...state.puzzle];
+  state.notes = Array.from({ length: 81 }, () => new Set());
+  state.wrongIndices.clear();
+  state.hintedIndices.clear();
+  state.selected = null;
+  state.mistakes = 0;
+  state.hints = 3;
+  state.elapsed = 0;
+  state.running = true;
+  state.completed = false;
+  state.notesMode = false;
+  state.history = [];
+  timerBase = Date.now();
+  render();
+  saveState();
+  showToast('Puzzle restarted.');
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  saveSettings();
+  render();
+  saveState();
+}
+
+async function shareResult() {
+  const label = state.mode === 'wordoku' ? 'Wordoku' : 'Sudoku';
+  const text = `Ninefold ${label} - ${capitalize(state.difficulty)}\nSolved in ${formatTime(state.elapsed)} with ${state.mistakes} ${state.mistakes === 1 ? 'mistake' : 'mistakes'}.`;
+  const shareData = { title: 'Ninefold puzzle result', text, url: window.location.href };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+      return;
+    }
+    await navigator.clipboard.writeText(`${text}\n${window.location.href}`);
+    showToast('Result copied to your clipboard.');
+  } catch (error) {
+    if (error?.name !== 'AbortError') showToast('Sharing is not available in this browser.');
+  }
+}
+
 function showToast(message) {
   window.clearTimeout(toastTimer);
   refs.toast.textContent = message;
@@ -637,6 +782,7 @@ function bindEvents() {
     saveState();
   });
   refs.newGameButton.addEventListener('click', () => requestNewGame());
+  refs.themeToggle.addEventListener('click', toggleTheme);
   refs.confirmNewGame.addEventListener('click', () => startNewGame(pendingGameOptions));
   refs.pauseButton.addEventListener('click', () => togglePause());
   refs.resumeButton.addEventListener('click', () => togglePause(true));
@@ -648,6 +794,10 @@ function bindEvents() {
   });
   refs.hintButton.addEventListener('click', useHint);
   refs.checkButton.addEventListener('click', checkBoard);
+  refs.autoNotesButton.addEventListener('click', fillCandidates);
+  refs.restartButton.addEventListener('click', () => refs.restartDialog.showModal());
+  refs.confirmRestart.addEventListener('click', restartCurrentGame);
+  refs.shareResultButton.addEventListener('click', shareResult);
   refs.playAgainButton.addEventListener('click', () => requestNewGame({}, true));
   refs.newGameDialog.addEventListener('close', () => {
     if (refs.newGameDialog.returnValue !== 'confirm') {

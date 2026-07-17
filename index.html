@@ -2,8 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#167455" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" id="themeColorMeta" content="#167455" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Ninefold" />
     <meta
       name="description"
       content="Ninefold is a polished, playable Sudoku and Wordoku puzzle game."
@@ -31,18 +34,27 @@
           </button>
         </div>
 
-        <button class="primary-button new-game-button" id="newGameButton" type="button">
-          <i data-lucide="plus" aria-hidden="true"></i>
-          <span>New game</span>
-        </button>
+        <div class="header-actions">
+          <button class="icon-button theme-button" id="themeToggle" type="button" title="Use dark theme" aria-label="Use dark theme">
+            <i data-lucide="moon" aria-hidden="true"></i>
+          </button>
+          <button class="primary-button new-game-button" id="newGameButton" type="button">
+            <i data-lucide="plus" aria-hidden="true"></i>
+            <span>New game</span>
+          </button>
+        </div>
       </header>
 
       <main class="game-layout">
         <section class="play-area" aria-labelledby="gameHeading">
           <div class="game-topbar">
-            <div>
+            <div class="game-title-block">
               <p class="eyebrow" id="modeEyebrow">Classic Sudoku</p>
               <h1 id="gameHeading">Medium puzzle</h1>
+              <div class="puzzle-status" aria-live="polite">
+                <span aria-hidden="true"></span>
+                <strong id="gameStatusText">In progress</strong>
+              </div>
             </div>
 
             <div class="timer-control" aria-label="Game timer">
@@ -120,6 +132,15 @@
               <span>Progress</span>
               <i data-lucide="chart-no-axes-column-increasing" aria-hidden="true"></i>
             </div>
+            <div class="progress-meter-block">
+              <div class="progress-copy">
+                <span>Squares solved</span>
+                <strong id="progressText">0 of 50</strong>
+              </div>
+              <div class="progress-track" role="progressbar" aria-label="Puzzle progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <span id="progressFill"></span>
+              </div>
+            </div>
             <dl class="stats-list">
               <div>
                 <dt>Mistakes</dt>
@@ -136,16 +157,30 @@
             </dl>
           </section>
 
+          <section class="panel-section assist-section">
+            <div class="section-heading">
+              <span>Puzzle tools</span>
+              <i data-lucide="sparkles" aria-hidden="true"></i>
+            </div>
+            <div class="panel-action-grid">
+              <button class="panel-action" id="autoNotesButton" type="button">
+                <i data-lucide="wand-sparkles" aria-hidden="true"></i>
+                <span>Auto notes</span>
+              </button>
+              <button class="panel-action danger-action" id="restartButton" type="button">
+                <i data-lucide="refresh-cw" aria-hidden="true"></i>
+                <span>Restart</span>
+              </button>
+            </div>
+          </section>
+
           <section class="panel-section preferences-section">
             <div class="section-heading">
               <span>Preferences</span>
               <i data-lucide="settings-2" aria-hidden="true"></i>
             </div>
             <label class="toggle-row" for="autoCheckToggle">
-              <span>
-                <strong>Check mistakes</strong>
-                <small>Show incorrect entries as you play</small>
-              </span>
+              <strong>Check mistakes</strong>
               <input id="autoCheckToggle" type="checkbox" checked />
               <span class="toggle-track" aria-hidden="true"></span>
             </label>
@@ -179,6 +214,22 @@
       </form>
     </dialog>
 
+    <dialog class="game-dialog" id="restartDialog">
+      <form method="dialog">
+        <button class="dialog-close icon-button" value="cancel" title="Close" aria-label="Close dialog">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+        <span class="dialog-icon restart-icon" aria-hidden="true"><i data-lucide="refresh-cw"></i></span>
+        <p class="eyebrow">Restart puzzle</p>
+        <h2>Reset your progress?</h2>
+        <p>This keeps the same board and returns the timer, hints, notes, and mistakes to their starting state.</p>
+        <div class="dialog-actions">
+          <button class="secondary-button" value="cancel">Keep playing</button>
+          <button class="primary-button danger-button" id="confirmRestart" value="confirm">Restart</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog class="game-dialog success-dialog" id="successDialog">
       <div class="celebration" id="celebration" aria-hidden="true"></div>
       <span class="dialog-icon success-icon" aria-hidden="true"><i data-lucide="trophy"></i></span>
@@ -189,10 +240,16 @@
         <div><span>Mistakes</span><strong id="finalMistakes">0</strong></div>
         <div><span>Difficulty</span><strong id="finalDifficulty">Medium</strong></div>
       </div>
-      <button class="primary-button" id="playAgainButton" type="button">
-        <i data-lucide="sparkles" aria-hidden="true"></i>
-        Play another
-      </button>
+      <div class="success-actions">
+        <button class="secondary-button" id="shareResultButton" type="button">
+          <i data-lucide="share-2" aria-hidden="true"></i>
+          Share result
+        </button>
+        <button class="primary-button" id="playAgainButton" type="button">
+          <i data-lucide="sparkles" aria-hidden="true"></i>
+          Play another
+        </button>
+      </div>
     </dialog>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
