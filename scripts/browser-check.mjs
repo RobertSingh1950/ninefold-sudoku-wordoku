@@ -36,6 +36,49 @@ async function notedCellCount(page) {
   ));
 }
 
+async function findWordSearchTarget(page, requestedWord = null) {
+  return page.evaluate((wordToFind) => {
+    const cells = [...document.querySelectorAll('.word-search-cell')];
+    const size = Math.sqrt(cells.length);
+    const letters = cells.map((cell) => cell.textContent.trim());
+    const listedWords = [...document.querySelectorAll('.word-search-list li:not(.found) span:last-child')]
+      .map((label) => label.textContent.trim());
+    const words = wordToFind ? [wordToFind] : listedWords;
+    const directions = [-1, 0, 1]
+      .flatMap((rowStep) => [-1, 0, 1].map((columnStep) => [rowStep, columnStep]))
+      .filter(([rowStep, columnStep]) => rowStep || columnStep);
+
+    for (const word of words) {
+      for (let start = 0; start < cells.length; start += 1) {
+        const startRow = Math.floor(start / size);
+        const startColumn = start % size;
+        for (const [rowStep, columnStep] of directions) {
+          const path = [...word].map((_, offset) => {
+            const row = startRow + rowStep * offset;
+            const column = startColumn + columnStep * offset;
+            return row < 0 || column < 0 || row >= size || column >= size ? null : row * size + column;
+          });
+          if (path.includes(null)) continue;
+          if (path.map((index) => letters[index]).join('') === word) {
+            return { word, start: path[0], end: path.at(-1), path };
+          }
+        }
+      }
+    }
+    return null;
+  }, requestedWord);
+}
+
+async function dragWordSearchPath(page, target) {
+  const start = await page.locator('.word-search-cell').nth(target.start).boundingBox();
+  const end = await page.locator('.word-search-cell').nth(target.end).boundingBox();
+  assert.ok(start && end, `word path for ${target.word} should be visible`);
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: target.path.length });
+  await page.mouse.up();
+}
+
 async function layoutMetrics(page) {
   return page.evaluate(() => {
     const visible = (element) => {
@@ -56,7 +99,7 @@ async function layoutMetrics(page) {
       || controlPanel.bottom <= playArea.top
     );
     const controls = [...document.querySelectorAll(
-      '.app-header button, .mode-button, .number-pad button, .tool-button, .panel-action, select, .check-button, .faq-list summary, .app-footer a',
+      '.app-header button, .mode-button, .number-pad button, .tool-button, .panel-action, .word-search-cell, select, .check-button, .faq-list summary, .app-footer a',
     )].filter(visible);
 
     return {
@@ -115,7 +158,10 @@ try {
   });
 
   assert.ok(seo.title.length >= 30 && seo.title.length <= 60, 'SEO title should use a useful search-result length');
-  assert.ok(seo.title.includes('Sudoku') && seo.title.includes('Wordoku'), 'SEO title should name both game modes');
+  assert.ok(
+    seo.title.includes('Sudoku') && seo.title.includes('Wordoku') && seo.title.includes('Word Search'),
+    'SEO title should name all three game modes',
+  );
   assert.ok(seo.description.length >= 120 && seo.description.length <= 160, 'meta description should use a useful search-result length');
   assert.ok(seo.robots.includes('index') && seo.robots.includes('max-image-preview:large'), 'robots metadata should permit rich indexing');
   assert.equal(seo.canonical, canonicalUrl, 'canonical URL should point to the live product page');
@@ -123,7 +169,7 @@ try {
   assert.equal(seo.twitterCard, 'summary_large_image', 'Twitter should use the large image card');
   assert.ok(seo.openGraphTitle && seo.openGraphDescription && seo.openGraphImageAlt, 'Open Graph metadata should be complete');
   assert.equal(seo.h1Count, 1, 'page should have one primary heading');
-  assert.equal(seo.faqCount, 5, 'visible FAQ should contain all structured questions');
+  assert.equal(seo.faqCount, 6, 'visible FAQ should contain all structured questions');
 
   const schemaGraph = seo.schemas.flatMap((schema) => schema['@graph'] ?? [schema]);
   const schemaHasType = (type) => schemaGraph.some((node) => {
@@ -150,7 +196,7 @@ try {
   assert.ok((await sitemapResponse.text()).includes(`<loc>${canonicalUrl}</loc>`), 'sitemap should include the canonical page');
   assert.ok(manifestResponse.ok(), 'web app manifest should be available');
   const manifest = await manifestResponse.json();
-  assert.equal(manifest.name, 'Ninefold Sudoku & Wordoku', 'manifest should use the complete product name');
+  assert.equal(manifest.name, 'Ninefold Sudoku, Wordoku & Word Search', 'manifest should use the complete product name');
   assert.equal(manifest.icons.length, 2, 'manifest should include both required icon sizes');
   assert.ok(socialImageResponse.ok(), 'social preview image should be available');
   assert.match(socialImageResponse.headers()['content-type'] ?? '', /^image\/png/, 'social preview should be a PNG');
@@ -232,6 +278,61 @@ try {
   assert.ok(wordokuValues.length > 0, 'Wordoku should render given letters');
   assert.ok(wordokuValues.every((value) => 'DISCOVERY'.includes(value)), 'Wordoku should use the selected letter set');
 
+  await page.locator('#wordSearchMode').click();
+  if (await page.locator('#newGameDialog').isVisible()) await page.locator('#confirmNewGame').click();
+  await page.locator('#wordSearchMode.active').waitFor();
+  const wordSearchCellCount = await page.locator('.word-search-cell').count();
+  assert.equal(wordSearchCellCount, 100, 'medium Word Search should render a 10x10 grid');
+  assert.equal(await page.locator('.word-search-list li').count(), 8, 'medium Word Search should list eight words');
+  assert.ok(await page.locator('#wordSearchPanel').isVisible(), 'Word Search list should be visible');
+  assert.ok(await page.locator('#numberPad').isHidden(), 'Sudoku entry pad should be hidden in Word Search');
+  assert.ok(await page.locator('#preferencesSection').isHidden(), 'Sudoku preferences should be hidden in Word Search');
+
+  const firstWord = await findWordSearchTarget(page);
+  assert.ok(firstWord, 'a listed Word Search word should exist in the grid');
+  await dragWordSearchPath(page, firstWord);
+  assert.equal(await page.locator('.word-search-list li.found').count(), 1, 'dragging across a listed word should mark it found');
+  assert.equal(await page.locator('#progressText').innerText(), '1 of 8', 'finding a word should update progress');
+
+  const wordSearchHints = Number(await page.locator('#hintsLeft').innerText());
+  await page.locator('#hintButton').click();
+  assert.equal(Number(await page.locator('#hintsLeft').innerText()), wordSearchHints - 1, 'Word Search hint count should decrease');
+  assert.ok(await page.locator('.word-search-cell.hinted').count() >= 3, 'Word Search hint should highlight a remaining path');
+  await page.screenshot({ path: artifactPath('ninefold-word-search-active.png'), fullPage: true });
+
+  await page.reload({ waitUntil: 'networkidle' });
+  assert.ok(await page.locator('#wordSearchMode.active').isVisible(), 'Word Search mode should persist after reload');
+  assert.equal(await page.locator('.word-search-list li.found').count(), 1, 'found words should persist after reload');
+  assert.equal(await page.locator('#hintsLeft').innerText(), '2', 'used Word Search hints should persist after reload');
+
+  await dragWordSearchPath(page, { word: 'invalid line', start: 0, end: 1, path: [0, 1] });
+  assert.equal(await page.locator('#mistakeCount').innerText(), '1', 'an invalid Word Search line should count as an attempt');
+
+  await page.locator('#restartButton').click();
+  assert.ok(await page.locator('#restartDialog').isVisible(), 'Word Search restart should require confirmation');
+  await page.locator('#confirmRestart').click();
+  await page.locator('#restartDialog').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('.word-search-list li.found').count(), 0, 'Word Search restart should clear found words');
+  assert.equal(await page.locator('#mistakeCount').innerText(), '0', 'Word Search restart should clear attempts');
+  assert.equal(await page.locator('#hintsLeft').innerText(), '3', 'Word Search restart should restore hints');
+
+  const totalWordSearchWords = await page.locator('.word-search-list li').count();
+  for (let foundCount = 0; foundCount < totalWordSearchWords; foundCount += 1) {
+    const target = await findWordSearchTarget(page);
+    assert.ok(target, `Word Search should expose remaining word ${foundCount + 1}`);
+    await dragWordSearchPath(page, target);
+    assert.equal(
+      await page.locator('.word-search-list li.found').count(),
+      foundCount + 1,
+      `Word Search should record solved word ${foundCount + 1}`,
+    );
+  }
+  await page.locator('#successDialog').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#finalMistakeLabel').innerText(), 'ATTEMPTS', 'completion dialog should use the Word Search result label');
+  await page.locator('#playAgainButton').click();
+  await page.locator('#successDialog').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('.word-search-list li.found').count(), 0, 'play again should create a fresh Word Search');
+
   await page.locator('#pauseButton').click();
   assert.ok(await page.locator('#pauseScreen').isVisible(), 'pause overlay should be visible');
   await page.locator('#resumeButton').click();
@@ -259,6 +360,8 @@ try {
   const tabletPage = await tabletContext.newPage();
   watchBrowser(tabletPage);
   await tabletPage.goto(appUrl, { waitUntil: 'networkidle' });
+  await tabletPage.locator('#wordSearchMode').click();
+  await tabletPage.locator('#wordSearchMode.active').waitFor();
 
   for (const size of tabletSizes) {
     await tabletPage.setViewportSize({ width: size.width, height: size.height });
@@ -293,6 +396,7 @@ try {
     engine,
     desktopBoard: `${Math.round(boardBounds.width)}x${Math.round(boardBounds.height)}`,
     mobileBoard: `${Math.round(mobileLayout.board.width)}x${Math.round(mobileLayout.board.height)}`,
+    wordSearchGrid: `${Math.sqrt(wordSearchCellCount)}x${Math.sqrt(wordSearchCellCount)}`,
     tabletResults,
     browserErrors: browserErrors.length,
   }, null, 2));

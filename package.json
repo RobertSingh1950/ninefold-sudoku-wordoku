@@ -13,6 +13,7 @@
     "test:webkit": "node scripts/browser-check.mjs --webkit"
   },
   "dependencies": {
+    "@blex41/word-search": "^1.2.0",
     "lucide": "^1.24.0",
     "sudoku-gen": "^1.0.2"
   },

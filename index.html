@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Play Sudoku &amp; Wordoku Online Free | Ninefold</title>
+    <title>Play Sudoku, Wordoku &amp; Word Search | Ninefold</title>
     <meta
       name="description"
-      content="Play free Sudoku and Wordoku puzzles online with four difficulty levels, smart notes, hints, mistake checking and a timer. No sign-up required."
+      content="Play free Sudoku, Wordoku and Word Search puzzles online with four difficulty levels, smart hints, saved progress and a timer. No sign-up required."
     />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -31,10 +31,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="Ninefold" />
-    <meta property="og:title" content="Play Sudoku &amp; Wordoku Online Free | Ninefold" />
+    <meta property="og:title" content="Play Sudoku, Wordoku &amp; Word Search | Ninefold" />
     <meta
       property="og:description"
-      content="Solve free Sudoku and Wordoku puzzles online with four difficulty levels, hints, smart notes and mistake checking."
+      content="Solve free Sudoku, Wordoku and Word Search puzzles online with four difficulty levels, hints and saved progress."
     />
     <meta property="og:url" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/" />
     <meta property="og:image" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png" />
@@ -42,16 +42,16 @@
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Ninefold Sudoku board with puzzle controls and progress panel" />
+    <meta property="og:image:alt" content="Ninefold online puzzle game with a playable board and progress controls" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Play Sudoku &amp; Wordoku Online Free | Ninefold" />
+    <meta name="twitter:title" content="Play Sudoku, Wordoku &amp; Word Search | Ninefold" />
     <meta
       name="twitter:description"
-      content="Solve free Sudoku and Wordoku puzzles online with four difficulty levels, hints, smart notes and mistake checking."
+      content="Solve free Sudoku, Wordoku and Word Search puzzles online with four difficulty levels, hints and saved progress."
     />
     <meta name="twitter:image" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png" />
-    <meta name="twitter:image:alt" content="Ninefold Sudoku board with puzzle controls and progress panel" />
+    <meta name="twitter:image:alt" content="Ninefold online puzzle game with a playable board and progress controls" />
 
     <script type="application/ld+json">
       {
@@ -62,29 +62,29 @@
             "@id": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/#website",
             "url": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/",
             "name": "Ninefold",
-            "alternateName": "Ninefold Sudoku & Wordoku",
-            "description": "A free online Sudoku and Wordoku puzzle game with four difficulty levels.",
+            "alternateName": "Ninefold Sudoku, Wordoku & Word Search",
+            "description": "Free online Sudoku, Wordoku and Word Search puzzle games with four difficulty levels.",
             "inLanguage": "en"
           },
           {
             "@type": ["WebApplication", "VideoGame"],
             "@id": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/#game",
             "url": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/",
-            "name": "Ninefold Sudoku & Wordoku",
-            "description": "Play free Sudoku and Wordoku puzzles online with easy, medium, hard and expert difficulty levels.",
+            "name": "Ninefold Sudoku, Wordoku & Word Search",
+            "description": "Play free Sudoku, Wordoku and Word Search puzzles online with easy, medium, hard and expert difficulty levels.",
             "applicationCategory": "GameApplication",
             "applicationSubCategory": "Puzzle Game",
             "operatingSystem": "Any",
             "browserRequirements": "Requires JavaScript and a modern web browser.",
             "isAccessibleForFree": true,
             "inLanguage": "en",
-            "genre": ["Puzzle", "Sudoku", "Word game"],
+            "genre": ["Puzzle", "Sudoku", "Word game", "Word search"],
             "playMode": "SinglePlayer",
             "gamePlatform": ["Web browser", "Desktop", "Mobile", "Tablet"],
             "image": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png",
             "screenshot": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png",
             "featureList": [
-              "Sudoku and Wordoku game modes",
+              "Sudoku, Wordoku and Word Search game modes",
               "Easy, medium, hard and expert puzzles",
               "Hints, candidate notes and mistake checking",
               "Timer, progress tracking and local game saving",
@@ -124,6 +124,14 @@
               },
               {
                 "@type": "Question",
+                "name": "How do you play Word Search?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Find each listed word hidden horizontally, vertically or diagonally in the letter grid. Words may also appear backwards on higher difficulty levels."
+                }
+              },
+              {
+                "@type": "Question",
                 "name": "Is Ninefold free to play?",
                 "acceptedAnswer": {
                   "@type": "Answer",
@@ -159,7 +167,7 @@
           <span class="brand-mark" aria-hidden="true"><i data-lucide="grid-3x3"></i></span>
           <span>
             <strong>Ninefold</strong>
-            <small>Sudoku & Wordoku</small>
+            <small>Sudoku, Wordoku &amp; Word Search</small>
           </span>
         </a>
 
@@ -169,6 +177,9 @@
           </button>
           <button class="mode-button" id="wordokuMode" type="button" role="tab" data-mode="wordoku">
             Wordoku
+          </button>
+          <button class="mode-button" id="wordSearchMode" type="button" role="tab" data-mode="wordsearch">
+            Word Search
           </button>
         </div>
 
@@ -215,6 +226,17 @@
               </button>
             </div>
           </div>
+
+          <section class="word-search-panel" id="wordSearchPanel" aria-labelledby="wordSearchListHeading" hidden>
+            <div class="word-search-panel-heading">
+              <div>
+                <p class="eyebrow">Word list</p>
+                <h2 id="wordSearchListHeading">Find the hidden words</h2>
+              </div>
+              <strong id="wordSearchFoundCount">0 of 8</strong>
+            </div>
+            <ul class="word-search-list" id="wordSearchWords"></ul>
+          </section>
 
           <div class="number-pad" id="numberPad" aria-label="Entry pad"></div>
 
@@ -272,7 +294,7 @@
             </div>
             <div class="progress-meter-block">
               <div class="progress-copy">
-                <span>Squares solved</span>
+                <span id="progressLabel">Squares solved</span>
                 <strong id="progressText">0 of 50</strong>
               </div>
               <div class="progress-track" role="progressbar" aria-label="Puzzle progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -281,7 +303,7 @@
             </div>
             <dl class="stats-list">
               <div>
-                <dt>Mistakes</dt>
+                <dt id="mistakeLabel">Mistakes</dt>
                 <dd id="mistakeCount">0</dd>
               </div>
               <div>
@@ -295,7 +317,7 @@
             </dl>
           </section>
 
-          <section class="panel-section assist-section">
+          <section class="panel-section assist-section" id="puzzleToolsSection">
             <div class="section-heading">
               <span>Puzzle tools</span>
               <i data-lucide="sparkles" aria-hidden="true"></i>
@@ -312,7 +334,7 @@
             </div>
           </section>
 
-          <section class="panel-section preferences-section">
+          <section class="panel-section preferences-section" id="preferencesSection">
             <div class="section-heading">
               <span>Preferences</span>
               <i data-lucide="settings-2" aria-hidden="true"></i>
@@ -334,12 +356,12 @@
         <div class="seo-content-inner">
           <header class="seo-intro">
             <div>
-              <p class="eyebrow">Two forms of logic</p>
-              <h2 id="aboutHeading">Play free Sudoku and Wordoku online</h2>
+              <p class="eyebrow">Three ways to solve</p>
+              <h2 id="aboutHeading">Play free Sudoku, Wordoku and Word Search online</h2>
             </div>
             <p>
-              Ninefold brings classic number puzzles and letter-based Wordoku together in one focused game.
-              Choose a challenge, reason through the grid and return to your saved puzzle whenever you are ready.
+              Ninefold brings classic number puzzles, letter-based Wordoku and hidden-word searches together in
+              one focused game. Choose a challenge and return to your saved puzzle whenever you are ready.
             </p>
           </header>
 
@@ -362,10 +384,18 @@
             </article>
             <article>
               <span class="guide-number" aria-hidden="true">03</span>
+              <h3>Word Search</h3>
+              <p>
+                Find themed words hidden across the grid horizontally, vertically or diagonally. Higher levels
+                use larger boards and can place words in any direction.
+              </p>
+            </article>
+            <article>
+              <span class="guide-number" aria-hidden="true">04</span>
               <h3>Four difficulty levels</h3>
               <p>
                 Easy and medium puzzles suit relaxed sessions, while hard and expert grids offer a denser logic
-                challenge. Every level is available in both game modes.
+                challenge. Every level is available in all three game modes.
               </p>
             </article>
           </div>
@@ -373,7 +403,7 @@
           <section class="faq-section" aria-labelledby="faqHeading">
             <div class="faq-heading">
               <p class="eyebrow">Useful answers</p>
-              <h2 id="faqHeading">Sudoku and Wordoku FAQ</h2>
+              <h2 id="faqHeading">Puzzle game FAQ</h2>
             </div>
             <div class="faq-list">
               <details>
@@ -388,6 +418,13 @@
                 <p>
                   Wordoku uses nine distinct letters instead of the digits 1 through 9. The logic is identical
                   to Sudoku: every letter appears once in each row, column and 3 by 3 box.
+                </p>
+              </details>
+              <details>
+                <summary>How do you play Word Search?</summary>
+                <p>
+                  Find each listed word hidden horizontally, vertically or diagonally in the letter grid. Words
+                  may also appear backwards on higher difficulty levels.
                 </p>
               </details>
               <details>
@@ -450,7 +487,7 @@
         <span class="dialog-icon restart-icon" aria-hidden="true"><i data-lucide="refresh-cw"></i></span>
         <p class="eyebrow">Restart puzzle</p>
         <h2>Reset your progress?</h2>
-        <p>This keeps the same board and returns the timer, hints, notes, and mistakes to their starting state.</p>
+        <p id="restartDialogCopy">This keeps the same board and returns the timer, hints, notes, and mistakes to their starting state.</p>
         <div class="dialog-actions">
           <button class="secondary-button" value="cancel">Keep playing</button>
           <button class="primary-button danger-button" id="confirmRestart" value="confirm">Restart</button>
@@ -465,7 +502,7 @@
       <h2>Beautifully solved.</h2>
       <div class="finish-stats">
         <div><span>Time</span><strong id="finalTime">00:00</strong></div>
-        <div><span>Mistakes</span><strong id="finalMistakes">0</strong></div>
+        <div><span id="finalMistakeLabel">Mistakes</span><strong id="finalMistakes">0</strong></div>
         <div><span>Difficulty</span><strong id="finalDifficulty">Medium</strong></div>
       </div>
       <div class="success-actions">
