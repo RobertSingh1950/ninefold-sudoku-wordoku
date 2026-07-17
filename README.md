@@ -1,8 +1,8 @@
 # Ninefold
 
-A responsive browser game with Sudoku, Wordoku, and themed English or Hindi Word Search modes. It includes four difficulty levels, a pauseable timer, mouse and touch selection, candidate notes, hints, mistake checking, puzzle restart, dark mode, saved progress, shareable results, and best times.
+A responsive browser game with Sudoku, Wordoku, themed English or Hindi Word Search, and Nonogram modes. It includes four difficulty levels, a pauseable timer, mouse and touch play, candidate notes, hints, mistake checking, puzzle restart, dark mode, saved progress, shareable results, and best times.
 
-The layout and Hindi Word Search selection flow are tested at iPad Mini, iPad Air, 11-inch iPad Pro, and 13-inch iPad Pro viewport sizes in portrait and landscape using both Chromium and WebKit.
+The layout, Hindi Word Search selection, and Nonogram painting flows are tested at iPad Mini, iPad Air, 11-inch iPad Pro, and 13-inch iPad Pro viewport sizes in portrait and landscape using both Chromium and WebKit.
 
 **Play it live:** [robertsingh1950.github.io/ninefold-sudoku-wordoku](https://robertsingh1950.github.io/ninefold-sudoku-wordoku/)
 
@@ -31,4 +31,4 @@ npm run generate:seo-assets
 
 The included GitHub Actions workflow builds and publishes the site to GitHub Pages whenever `main` is pushed.
 
-Sudoku generation is powered by [`sudoku-gen`](https://www.npmjs.com/package/sudoku-gen), and Word Search generation is powered by [`@blex41/word-search`](https://www.npmjs.com/package/@blex41/word-search). Both are licensed under MIT. Interface icons are provided by [Lucide](https://lucide.dev/).
+Sudoku generation is powered by [`sudoku-gen`](https://www.npmjs.com/package/sudoku-gen), Word Search by [`@blex41/word-search`](https://www.npmjs.com/package/@blex41/word-search), and Nonogram creation and logical solving by [`monkey-nonogram`](https://www.npmjs.com/package/monkey-nonogram). All three are licensed under MIT. Interface icons are provided by [Lucide](https://lucide.dev/).

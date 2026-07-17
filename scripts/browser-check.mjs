@@ -9,6 +9,7 @@ const artifactsPath = new URL('../artifacts/', import.meta.url);
 const browserErrors = [];
 const engine = process.argv.includes('--webkit') ? 'webkit' : 'chromium';
 const canonicalUrl = 'https://robertsingh1950.github.io/ninefold-sudoku-wordoku/';
+const activeGameStorageKey = 'ninefold-active-game-v1';
 
 const tabletSizes = [
   { name: 'ipad-mini-portrait', width: 768, height: 1024 },
@@ -83,6 +84,16 @@ async function dragWordSearchPath(page, target) {
   await page.mouse.up();
 }
 
+async function dragNonogramPair(page, startIndex, endIndex) {
+  const start = await page.locator('.nonogram-cell').nth(startIndex).boundingBox();
+  const end = await page.locator('.nonogram-cell').nth(endIndex).boundingBox();
+  assert.ok(start && end, 'Nonogram drag cells should be visible');
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 4 });
+  await page.mouse.up();
+}
+
 async function layoutMetrics(page) {
   return page.evaluate(() => {
     const visible = (element) => {
@@ -103,7 +114,7 @@ async function layoutMetrics(page) {
       || controlPanel.bottom <= playArea.top
     );
     const controls = [...document.querySelectorAll(
-      '.app-header button, .mode-button, .number-pad button, .tool-button, .panel-action, .word-search-cell, select, .check-button, .faq-list summary, .app-footer a',
+      '.app-header button, .mode-button, .number-pad button, .tool-button, .panel-action, .word-search-cell, .nonogram-cell, .nonogram-mode-button, select, .check-button, .faq-list summary, .app-footer a',
     )].filter(visible);
 
     return {
@@ -163,8 +174,11 @@ try {
 
   assert.ok(seo.title.length >= 30 && seo.title.length <= 60, 'SEO title should use a useful search-result length');
   assert.ok(
-    seo.title.includes('Sudoku') && seo.title.includes('Wordoku') && seo.title.includes('Word Search'),
-    'SEO title should name all three game modes',
+    seo.title.includes('Sudoku')
+      && seo.title.includes('Wordoku')
+      && seo.title.includes('Word Search')
+      && seo.title.includes('Nonogram'),
+    'SEO title should name all four game modes',
   );
   assert.ok(seo.description.length >= 120 && seo.description.length <= 160, 'meta description should use a useful search-result length');
   assert.ok(seo.description.includes('Hindi Word Search'), 'meta description should advertise Hindi Word Search');
@@ -174,7 +188,7 @@ try {
   assert.equal(seo.twitterCard, 'summary_large_image', 'Twitter should use the large image card');
   assert.ok(seo.openGraphTitle && seo.openGraphDescription && seo.openGraphImageAlt, 'Open Graph metadata should be complete');
   assert.equal(seo.h1Count, 1, 'page should have one primary heading');
-  assert.equal(seo.faqCount, 7, 'visible FAQ should contain all structured questions');
+  assert.equal(seo.faqCount, 8, 'visible FAQ should contain all structured questions');
 
   const schemaGraph = seo.schemas.flatMap((schema) => schema['@graph'] ?? [schema]);
   const schemaHasType = (type) => schemaGraph.some((node) => {
@@ -201,7 +215,11 @@ try {
   assert.ok((await sitemapResponse.text()).includes(`<loc>${canonicalUrl}</loc>`), 'sitemap should include the canonical page');
   assert.ok(manifestResponse.ok(), 'web app manifest should be available');
   const manifest = await manifestResponse.json();
-  assert.equal(manifest.name, 'Ninefold Sudoku, Wordoku & Word Search', 'manifest should use the complete product name');
+  assert.equal(
+    manifest.name,
+    'Ninefold Sudoku, Wordoku, Word Search & Nonogram',
+    'manifest should use the complete product name',
+  );
   assert.equal(manifest.icons.length, 2, 'manifest should include both required icon sizes');
   assert.ok(socialImageResponse.ok(), 'social preview image should be available');
   assert.match(socialImageResponse.headers()['content-type'] ?? '', /^image\/png/, 'social preview should be a PNG');
@@ -360,6 +378,100 @@ try {
   assert.equal(await page.locator('#wordSearchLanguageSelect').inputValue(), 'hindi', 'Hindi language choice should persist');
   assert.equal(await page.locator('.word-search-list li.found').count(), 1, 'found Hindi words should persist after reload');
 
+  await page.locator('#nonogramMode').click();
+  if (await page.locator('#newGameDialog').isVisible()) await page.locator('#confirmNewGame').click();
+  await page.locator('#nonogramMode.active').waitFor();
+  const nonogramCellCount = await page.locator('.nonogram-cell').count();
+  assert.equal(nonogramCellCount, 64, 'medium Nonogram should render an 8x8 playable grid');
+  assert.equal(await page.locator('.nonogram-row-clue').count(), 8, 'Nonogram should render eight row clues');
+  assert.equal(await page.locator('.nonogram-column-clue').count(), 8, 'Nonogram should render eight column clues');
+  assert.ok(await page.locator('#nonogramControls').isVisible(), 'Nonogram fill and X controls should be visible');
+  assert.ok(await page.locator('#numberPad').isHidden(), 'Sudoku entry pad should be hidden in Nonogram');
+  assert.ok(await page.locator('#wordSearchPanel').isHidden(), 'Word Search list should be hidden in Nonogram');
+  assert.ok(await page.locator('#preferencesSection').isVisible(), 'mistake checking should remain available in Nonogram');
+
+  const initialNonogramState = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), activeGameStorageKey);
+  const adjacentPair = initialNonogramState.solution
+    .map((value, index, solution) => {
+      const column = index % initialNonogramState.size;
+      const right = column < initialNonogramState.size - 1 ? index + 1 : null;
+      const down = index + initialNonogramState.size < solution.length ? index + initialNonogramState.size : null;
+      const neighbor = [right, down].find((candidate) => candidate !== null && solution[candidate] === value);
+      return neighbor === undefined ? null : { start: index, end: neighbor, value };
+    })
+    .find(Boolean);
+  assert.ok(adjacentPair, 'generated Nonogram should expose an adjacent pair for drag testing');
+  await page.locator(adjacentPair.value === 1 ? '#nonogramFillButton' : '#nonogramCrossButton').click();
+  await dragNonogramPair(page, adjacentPair.start, adjacentPair.end);
+  const dragClass = adjacentPair.value === 1 ? 'filled' : 'crossed';
+  assert.ok(
+    await page.locator('.nonogram-cell').nth(adjacentPair.start).evaluate((cell, name) => cell.classList.contains(name), dragClass),
+    'dragging should paint the first Nonogram cell',
+  );
+  assert.ok(
+    await page.locator('.nonogram-cell').nth(adjacentPair.end).evaluate((cell, name) => cell.classList.contains(name), dragClass),
+    'dragging should paint the final Nonogram cell',
+  );
+  await page.locator('#undoButton').click();
+  assert.equal(
+    await page.locator('.nonogram-cell.filled, .nonogram-cell.crossed').count(),
+    0,
+    'one undo should clear an entire Nonogram drag stroke',
+  );
+
+  const filledIndex = initialNonogramState.solution.indexOf(1);
+  const emptyIndex = initialNonogramState.solution.indexOf(0);
+  await page.locator('#nonogramFillButton').click();
+  await page.locator('.nonogram-cell').nth(filledIndex).click();
+  assert.ok(await page.locator('.nonogram-cell').nth(filledIndex).evaluate((cell) => cell.classList.contains('filled')), 'Fill mode should paint a cell');
+  await page.locator('#nonogramCrossButton').click();
+  await page.locator('.nonogram-cell').nth(emptyIndex).click();
+  assert.ok(await page.locator('.nonogram-cell').nth(emptyIndex).evaluate((cell) => cell.classList.contains('crossed')), 'X mode should mark an empty cell');
+  assert.equal(await page.locator('#mistakeCount').innerText(), '0', 'correct Nonogram marks should not add mistakes');
+
+  const nonogramHints = Number(await page.locator('#hintsLeft').innerText());
+  await page.locator('#hintButton').click();
+  assert.equal(Number(await page.locator('#hintsLeft').innerText()), nonogramHints - 1, 'Nonogram hint count should decrease');
+  assert.equal(await page.locator('.nonogram-cell.hinted').count(), 1, 'Nonogram hint should reveal one pixel');
+  const markedBeforeReload = await page.locator('.nonogram-cell.filled, .nonogram-cell.crossed').count();
+  await page.screenshot({ path: artifactPath('ninefold-nonogram-active.png'), fullPage: true });
+
+  await page.reload({ waitUntil: 'networkidle' });
+  assert.ok(await page.locator('#nonogramMode.active').isVisible(), 'Nonogram mode should persist after reload');
+  assert.equal(
+    await page.locator('.nonogram-cell.filled, .nonogram-cell.crossed').count(),
+    markedBeforeReload,
+    'Nonogram marks should persist after reload',
+  );
+  assert.equal(await page.locator('#hintsLeft').innerText(), '2', 'used Nonogram hints should persist after reload');
+
+  const stateAfterReload = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), activeGameStorageKey);
+  const wrongFillIndex = stateAfterReload.solution.findIndex((value, index) => value === 0 && stateAfterReload.values[index] === null);
+  assert.ok(wrongFillIndex >= 0, 'Nonogram should contain an unmarked empty pixel for mistake testing');
+  await page.locator('#nonogramFillButton').click();
+  await page.locator('.nonogram-cell').nth(wrongFillIndex).click();
+  assert.equal(await page.locator('#mistakeCount').innerText(), '1', 'wrong Nonogram fill should add a mistake');
+  assert.ok(await page.locator('.nonogram-cell').nth(wrongFillIndex).evaluate((cell) => cell.classList.contains('error')), 'wrong Nonogram fill should be highlighted');
+
+  await page.locator('#restartButton').click();
+  assert.ok(await page.locator('#restartDialog').isVisible(), 'Nonogram restart should require confirmation');
+  await page.locator('#confirmRestart').click();
+  await page.locator('#restartDialog').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('.nonogram-cell.filled, .nonogram-cell.crossed').count(), 0, 'Nonogram restart should clear all marks');
+  assert.equal(await page.locator('#mistakeCount').innerText(), '0', 'Nonogram restart should clear mistakes');
+  assert.equal(await page.locator('#hintsLeft').innerText(), '3', 'Nonogram restart should restore hints');
+
+  const solution = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)).solution, activeGameStorageKey);
+  await page.locator('#nonogramFillButton').click();
+  for (const [index, value] of solution.entries()) {
+    if (value === 1) await page.locator('.nonogram-cell').nth(index).click();
+  }
+  await page.locator('#successDialog').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#finalMistakeLabel').innerText(), 'MISTAKES', 'Nonogram completion should report mistakes');
+  await page.locator('#playAgainButton').click();
+  await page.locator('#successDialog').waitFor({ state: 'hidden' });
+  assert.equal(await page.locator('.nonogram-cell.filled, .nonogram-cell.crossed').count(), 0, 'play again should create a fresh Nonogram');
+
   await page.locator('#pauseButton').click();
   assert.ok(await page.locator('#pauseScreen').isVisible(), 'pause overlay should be visible');
   await page.locator('#resumeButton').click();
@@ -387,10 +499,9 @@ try {
   const tabletPage = await tabletContext.newPage();
   watchBrowser(tabletPage);
   await tabletPage.goto(appUrl, { waitUntil: 'networkidle' });
-  await tabletPage.locator('#wordSearchMode').click();
-  await tabletPage.locator('#wordSearchMode.active').waitFor();
-  await tabletPage.locator('#wordSearchLanguageSelect').selectOption('hindi');
-  await tabletPage.locator('#sudokuBoard[data-language="hindi"]').waitFor();
+  await tabletPage.locator('#nonogramMode').click();
+  await tabletPage.locator('#nonogramMode.active').waitFor();
+  assert.equal(await tabletPage.locator('.nonogram-cell').count(), 64, 'tablet Nonogram should render an 8x8 grid');
 
   for (const size of tabletSizes) {
     await tabletPage.setViewportSize({ width: size.width, height: size.height });
@@ -426,6 +537,7 @@ try {
     desktopBoard: `${Math.round(boardBounds.width)}x${Math.round(boardBounds.height)}`,
     mobileBoard: `${Math.round(mobileLayout.board.width)}x${Math.round(mobileLayout.board.height)}`,
     wordSearchGrid: `${Math.sqrt(wordSearchCellCount)}x${Math.sqrt(wordSearchCellCount)}`,
+    nonogramGrid: `${Math.sqrt(nonogramCellCount)}x${Math.sqrt(nonogramCellCount)}`,
     tabletResults,
     browserErrors: browserErrors.length,
   }, null, 2));

@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Play Sudoku, Wordoku &amp; Word Search | Ninefold</title>
+    <title>Play Sudoku, Wordoku, Word Search &amp; Nonogram | Ninefold</title>
     <meta
       name="description"
-      content="Play free Sudoku, Wordoku, English and Hindi Word Search puzzles online with four difficulty levels, smart hints, a timer and saved progress. No sign-up."
+      content="Play free Sudoku, Wordoku, English and Hindi Word Search, and Nonogram puzzles online with four difficulty levels, hints, timers and saved progress."
     />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -31,10 +31,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="Ninefold" />
-    <meta property="og:title" content="Play Sudoku, Wordoku &amp; Word Search | Ninefold" />
+    <meta property="og:title" content="Play Sudoku, Wordoku, Word Search &amp; Nonogram | Ninefold" />
     <meta
       property="og:description"
-      content="Solve free Sudoku, Wordoku, English and Hindi Word Search puzzles with four difficulty levels, hints and saved progress."
+      content="Solve free Sudoku, Wordoku, English and Hindi Word Search, and Nonogram puzzles with four difficulty levels, hints and saved progress."
     />
     <meta property="og:url" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/" />
     <meta property="og:image" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png" />
@@ -45,10 +45,10 @@
     <meta property="og:image:alt" content="Ninefold online puzzle game with a playable board and progress controls" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Play Sudoku, Wordoku &amp; Word Search | Ninefold" />
+    <meta name="twitter:title" content="Play Sudoku, Wordoku, Word Search &amp; Nonogram | Ninefold" />
     <meta
       name="twitter:description"
-      content="Solve free Sudoku, Wordoku, English and Hindi Word Search puzzles with four difficulty levels, hints and saved progress."
+      content="Solve free Sudoku, Wordoku, English and Hindi Word Search, and Nonogram puzzles with four difficulty levels, hints and saved progress."
     />
     <meta name="twitter:image" content="https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png" />
     <meta name="twitter:image:alt" content="Ninefold online puzzle game with a playable board and progress controls" />
@@ -62,29 +62,29 @@
             "@id": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/#website",
             "url": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/",
             "name": "Ninefold",
-            "alternateName": "Ninefold Sudoku, Wordoku & Word Search",
-            "description": "Free online Sudoku, Wordoku, English and Hindi Word Search puzzle games with four difficulty levels.",
+            "alternateName": "Ninefold Sudoku, Wordoku, Word Search & Nonogram",
+            "description": "Free online Sudoku, Wordoku, English and Hindi Word Search, and Nonogram puzzle games with four difficulty levels.",
             "inLanguage": ["en", "hi"]
           },
           {
             "@type": ["WebApplication", "VideoGame"],
             "@id": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/#game",
             "url": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/",
-            "name": "Ninefold Sudoku, Wordoku & Word Search",
-            "description": "Play free Sudoku, Wordoku, English and Hindi Word Search puzzles online with easy, medium, hard and expert difficulty levels.",
+            "name": "Ninefold Sudoku, Wordoku, Word Search & Nonogram",
+            "description": "Play free Sudoku, Wordoku, English and Hindi Word Search, and Nonogram puzzles online with easy, medium, hard and expert difficulty levels.",
             "applicationCategory": "GameApplication",
             "applicationSubCategory": "Puzzle Game",
             "operatingSystem": "Any",
             "browserRequirements": "Requires JavaScript and a modern web browser.",
             "isAccessibleForFree": true,
             "inLanguage": ["en", "hi"],
-            "genre": ["Puzzle", "Sudoku", "Word game", "Word search"],
+            "genre": ["Puzzle", "Sudoku", "Word game", "Word search", "Nonogram", "Picross"],
             "playMode": "SinglePlayer",
             "gamePlatform": ["Web browser", "Desktop", "Mobile", "Tablet"],
             "image": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png",
             "screenshot": "https://robertsingh1950.github.io/ninefold-sudoku-wordoku/ninefold-social-preview.png",
             "featureList": [
-              "Sudoku, Wordoku and English or Hindi Word Search game modes",
+              "Sudoku, Wordoku, English or Hindi Word Search, and Nonogram game modes",
               "Easy, medium, hard and expert puzzles",
               "Hints, candidate notes and mistake checking",
               "Timer, progress tracking and local game saving",
@@ -140,6 +140,14 @@
               },
               {
                 "@type": "Question",
+                "name": "How do you play a Nonogram?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Use the number clues beside each row and column to identify consecutive groups of filled squares. Mark confirmed empty squares with an X until the hidden pixel picture is revealed."
+                }
+              },
+              {
+                "@type": "Question",
                 "name": "Is Ninefold free to play?",
                 "acceptedAnswer": {
                   "@type": "Answer",
@@ -175,7 +183,7 @@
           <span class="brand-mark" aria-hidden="true"><i data-lucide="grid-3x3"></i></span>
           <span>
             <strong>Ninefold</strong>
-            <small>Sudoku, Wordoku &amp; Word Search</small>
+            <small>Four logic puzzle games</small>
           </span>
         </a>
 
@@ -188,6 +196,9 @@
           </button>
           <button class="mode-button" id="wordSearchMode" type="button" role="tab" data-mode="wordsearch">
             Word Search
+          </button>
+          <button class="mode-button" id="nonogramMode" type="button" role="tab" data-mode="nonogram">
+            Nonogram
           </button>
         </div>
 
@@ -233,6 +244,17 @@
                 Resume
               </button>
             </div>
+          </div>
+
+          <div class="nonogram-controls" id="nonogramControls" role="group" aria-label="Nonogram drawing mode" hidden>
+            <button class="nonogram-mode-button active" id="nonogramFillButton" type="button" aria-pressed="true">
+              <i data-lucide="square" aria-hidden="true"></i>
+              <span>Fill</span>
+            </button>
+            <button class="nonogram-mode-button" id="nonogramCrossButton" type="button" aria-pressed="false">
+              <i data-lucide="x" aria-hidden="true"></i>
+              <span>Mark X</span>
+            </button>
           </div>
 
           <section class="word-search-panel" id="wordSearchPanel" aria-labelledby="wordSearchListHeading" hidden>
@@ -372,12 +394,12 @@
         <div class="seo-content-inner">
           <header class="seo-intro">
             <div>
-              <p class="eyebrow">Three ways to solve</p>
-              <h2 id="aboutHeading">Play free Sudoku, Wordoku and Hindi Word Search online</h2>
+              <p class="eyebrow">Four ways to solve</p>
+              <h2 id="aboutHeading">Play Sudoku, Wordoku, Word Search and Nonogram online</h2>
             </div>
             <p>
-              Ninefold brings classic number puzzles, letter-based Wordoku and English or Hindi hidden-word
-              searches together in one focused game. Choose a challenge and return to your saved puzzle anytime.
+              Ninefold brings number logic, letter-based Wordoku, English or Hindi hidden-word searches and
+              picture-forming Nonograms together. Choose any difficulty and return to your saved puzzle anytime.
             </p>
           </header>
 
@@ -408,10 +430,10 @@
             </article>
             <article>
               <span class="guide-number" aria-hidden="true">04</span>
-              <h3>Four difficulty levels</h3>
+              <h3>Nonogram picture puzzles</h3>
               <p>
-                Easy and medium puzzles suit relaxed sessions, while hard and expert grids offer a denser logic
-                challenge. Every level is available in all three game modes.
+                Read the number clues for each row and column, fill confirmed pixels and mark empty squares with
+                an X. Every completed grid reveals a monochrome mosaic.
               </p>
             </article>
           </div>
@@ -448,6 +470,13 @@
                 <p>
                   Yes. Open Word Search and choose Hindi from the language menu to play themed Devanagari
                   puzzles at any difficulty level.
+                </p>
+              </details>
+              <details>
+                <summary>How do you play a Nonogram?</summary>
+                <p>
+                  Use the number clues beside each row and column to identify consecutive groups of filled
+                  squares. Mark confirmed empty squares with an X until the hidden pixel picture is revealed.
                 </p>
               </details>
               <details>

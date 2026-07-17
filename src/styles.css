@@ -162,7 +162,7 @@ button:disabled {
 
 .mode-switch {
   display: grid;
-  grid-template-columns: repeat(3, minmax(100px, 1fr));
+  grid-template-columns: repeat(4, minmax(86px, 1fr));
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -171,7 +171,7 @@ button:disabled {
 
 .mode-button {
   min-height: 44px;
-  padding: 0 18px;
+  padding: 0 14px;
   border: 0;
   border-radius: 5px;
   color: var(--muted);
@@ -454,6 +454,148 @@ h1 {
   user-select: none;
 }
 
+.nonogram-board {
+  grid-template-columns: minmax(72px, 20%) repeat(var(--nonogram-size), minmax(0, 1fr));
+  grid-template-rows: minmax(72px, 20%) repeat(var(--nonogram-size), minmax(0, 1fr));
+  touch-action: none;
+  user-select: none;
+}
+
+.nonogram-corner,
+.nonogram-clue {
+  min-width: 0;
+  min-height: 0;
+  background: var(--surface-subtle);
+}
+
+.nonogram-corner {
+  border-right: 2px solid var(--board-strong);
+  border-bottom: 2px solid var(--board-strong);
+}
+
+.nonogram-clue {
+  display: flex;
+  gap: 3px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.nonogram-column-clue {
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  padding: 7px 2px;
+  border-right: 1px solid var(--board-line);
+  border-bottom: 2px solid var(--board-strong);
+}
+
+.nonogram-row-clue {
+  align-items: center;
+  justify-content: end;
+  gap: 7px;
+  padding: 2px 8px;
+  border-right: 2px solid var(--board-strong);
+  border-bottom: 1px solid var(--board-line);
+}
+
+.nonogram-clue.complete {
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+
+.nonogram-cell {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--board-line);
+  border-bottom: 1px solid var(--board-line);
+  border-radius: 0;
+  color: var(--muted);
+  background: var(--surface);
+  font-family: Aptos, "Segoe UI Symbol", system-ui, sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 500;
+  cursor: crosshair;
+  transition: background 100ms ease, color 100ms ease, box-shadow 100ms ease;
+}
+
+.nonogram-cell[data-column="4"],
+.nonogram-cell[data-column="9"] {
+  border-right-width: 2px;
+  border-right-color: var(--board-strong);
+}
+
+.nonogram-cell[data-row="4"],
+.nonogram-cell[data-row="9"] {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--board-strong);
+}
+
+.nonogram-cell:hover {
+  background: var(--surface-hover);
+}
+
+.nonogram-cell.filled {
+  color: #fff;
+  background: var(--ink);
+}
+
+.nonogram-cell.crossed {
+  color: #7d8a95;
+  background: var(--surface-subtle);
+}
+
+.nonogram-cell.selected {
+  z-index: 1;
+  box-shadow: inset 0 0 0 2px var(--blue);
+}
+
+.nonogram-cell.hinted:not(.error) {
+  box-shadow: inset 0 0 0 3px var(--gold);
+}
+
+.nonogram-cell.error {
+  color: var(--coral);
+  background: var(--coral-soft);
+  box-shadow: inset 0 0 0 2px var(--coral);
+}
+
+.nonogram-board[data-size="10"] .nonogram-clue,
+.nonogram-board[data-size="12"] .nonogram-clue {
+  gap: 2px;
+  font-size: 10px;
+}
+
+.nonogram-board[data-size="10"] .nonogram-row-clue,
+.nonogram-board[data-size="12"] .nonogram-row-clue {
+  gap: 5px;
+}
+
+.nonogram-board[data-size="5"] .nonogram-cell {
+  font-size: 32px;
+}
+
+.nonogram-board[data-size="8"] .nonogram-cell {
+  font-size: 25px;
+}
+
+.nonogram-board[data-size="10"] .nonogram-cell {
+  font-size: 20px;
+}
+
+.nonogram-board[data-size="12"] .nonogram-cell {
+  font-size: 17px;
+}
+
 .word-search-cell {
   min-width: 0;
   min-height: 0;
@@ -617,6 +759,57 @@ h1 {
   border-bottom: 1px solid var(--line);
 }
 
+.nonogram-controls {
+  width: min(100%, 620px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 14px auto 0;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-subtle);
+}
+
+.nonogram-controls[hidden] {
+  display: none;
+}
+
+.nonogram-mode-button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.nonogram-mode-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.nonogram-mode-button.active {
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 1px 5px rgba(32, 42, 53, 0.1);
+}
+
+#nonogramFillButton.active svg {
+  color: var(--accent);
+  fill: var(--accent);
+}
+
+#nonogramCrossButton.active svg {
+  color: var(--blue);
+}
+
 .word-search-panel-heading {
   display: flex;
   align-items: end;
@@ -688,6 +881,14 @@ h1 {
 }
 
 [data-mode="wordsearch"] .panel-action-grid {
+  grid-template-columns: 1fr;
+}
+
+[data-mode="nonogram"] .tool-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+[data-mode="nonogram"] .panel-action-grid {
   grid-template-columns: 1fr;
 }
 
@@ -1405,6 +1606,7 @@ select {
   .board-frame,
   .number-pad,
   .tool-row,
+  .nonogram-controls,
   .word-search-panel {
     width: min(100%, 500px);
   }
@@ -1571,13 +1773,13 @@ select {
   }
 
   .mode-switch {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .mode-button {
     min-height: 44px;
-    padding: 0 8px;
-    font-size: 13px;
+    padding: 0 4px;
+    font-size: 12px;
   }
 
   .game-layout {
@@ -1642,6 +1844,45 @@ select {
 
   [data-mode="wordsearch"] .tool-row {
     grid-template-columns: 1fr;
+  }
+
+  [data-mode="nonogram"] .tool-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .nonogram-board {
+    grid-template-columns: minmax(64px, 20%) repeat(var(--nonogram-size), minmax(0, 1fr));
+    grid-template-rows: minmax(64px, 20%) repeat(var(--nonogram-size), minmax(0, 1fr));
+  }
+
+  .nonogram-clue {
+    font-size: 10px;
+  }
+
+  .nonogram-row-clue {
+    gap: 5px;
+    padding-inline: 5px;
+  }
+
+  .nonogram-board[data-size="10"] .nonogram-clue,
+  .nonogram-board[data-size="12"] .nonogram-clue {
+    font-size: 8px;
+  }
+
+  .nonogram-board[data-size="5"] .nonogram-cell {
+    font-size: 24px;
+  }
+
+  .nonogram-board[data-size="8"] .nonogram-cell {
+    font-size: 19px;
+  }
+
+  .nonogram-board[data-size="10"] .nonogram-cell {
+    font-size: 15px;
+  }
+
+  .nonogram-board[data-size="12"] .nonogram-cell {
+    font-size: 13px;
   }
 
   .word-search-board[data-size="9"] .word-search-cell {

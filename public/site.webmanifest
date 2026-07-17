@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "Ninefold Sudoku, Wordoku & Word Search",
+  "name": "Ninefold Sudoku, Wordoku, Word Search & Nonogram",
   "short_name": "Ninefold",
-  "description": "Play free Sudoku, Wordoku, English and Hindi Word Search puzzles with four difficulty levels, hints and saved progress.",
+  "description": "Play free Sudoku, Wordoku, English and Hindi Word Search, and Nonogram puzzles with four difficulty levels, hints and saved progress.",
   "lang": "en",
   "start_url": "./",
   "scope": "./",
